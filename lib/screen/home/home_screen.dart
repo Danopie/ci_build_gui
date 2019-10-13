@@ -158,6 +158,7 @@ class BuildButton extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(50),
                       onPressed: () {
+                        FocusScope.of(context).requestFocus(FocusNode());
                         final bloc = BlocProvider.of<HomeBloc>(context);
                         if (state is HomeIdleState) {
                           bloc.dispatch(BuildEvent());
