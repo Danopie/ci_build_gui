@@ -16,12 +16,14 @@ class RaisedGradientButton extends StatelessWidget {
     this.width = double.infinity,
     this.height = 50.0,
     this.onPressed,
-    this.borderRadius, this.splashColor,
+    this.borderRadius,
+    this.splashColor,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 150),
       width: width,
       height: 50.0,
       decoration: BoxDecoration(
