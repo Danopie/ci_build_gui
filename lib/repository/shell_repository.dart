@@ -19,13 +19,13 @@ class ShellRepository {
 
   Process process;
 
-//  String buildFilePath = "/Users/danle/Desktop/untitled.sh";
   String buildFilePath = "/Workspace/dc3/dev/buyer_mobile/clean-build-deloy.sh";
 
-  Future<dynamic> build(BuildConfig config) async {
+  Future<ProcessResult> build(BuildConfig config) async {
     final args = <String>[];
 
     //Path
+
     args.add(buildFilePath);
 
     //Flavor
@@ -66,7 +66,7 @@ class ShellRepository {
     //Packages get
     args.addAll(["-g", _getBooleanValue(config.needPackagesGet)]);
 
-    //Cleac
+    //Clear
     args.addAll(["-c", _getBooleanValue(config.needClean)]);
 
     //Refresh native libraries
@@ -86,6 +86,10 @@ class ShellRepository {
       process.stderr.listen((err) {
         _stdOutController.add(String.fromCharCodes(err));
       });
+
+      final exitCode = await process.exitCode;
+      return ProcessResult(
+          process.pid, exitCode, process.stdout, process.stderr);
     } catch (e) {
       _stdOutController.add("Error: ${e.toString()}");
     }
