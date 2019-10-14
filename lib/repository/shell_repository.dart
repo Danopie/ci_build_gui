@@ -19,8 +19,8 @@ class ShellRepository {
 
   Process process;
 
-  String buildFilePath = "/Users/danle/Desktop/untitled.sh";
-//  String buildFilePath = "/Workspace/dc3/dev/buyer_mobile/clean-build-deloy.sh";
+//  String buildFilePath = "/Users/danle/Desktop/untitled.sh";
+  String buildFilePath = "/Workspace/dc3/dev/buyer_mobile/clean-build-deloy.sh";
 
   Future<dynamic> build(BuildConfig config) async {
     final args = <String>[];
