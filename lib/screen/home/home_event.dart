@@ -4,6 +4,8 @@ import 'package:meta/meta.dart';
 @immutable
 abstract class HomeEvent {}
 
+class InitBlocEvent extends HomeEvent {}
+
 class BuildEvent extends HomeEvent {}
 
 class StopBuildEvent extends HomeEvent {}
@@ -21,6 +23,14 @@ class UpdateBranchEvent extends HomeEvent {
 
   UpdateBranchEvent({
     this.branchName,
+  });
+}
+
+class UpdateEnvironmentEvent extends HomeEvent {
+  final DevEnvironment devEnvironment;
+
+  UpdateEnvironmentEvent({
+    this.devEnvironment,
   });
 }
 

@@ -1,7 +1,7 @@
 name: example_flutter
 description: An example project for flutter-desktop-embedding.
 
-version: 0.1.0
+version: 0.1.1
 
 environment:
   sdk: '>=2.0.0 <3.0.0'
@@ -21,6 +21,10 @@ dependencies:
   after_layout: ^1.0.7+2
   rxdart: ^0.22.3
   avatar_glow: ^1.0.0
+  shared_preferences: ^0.5.3
+  shared_preferences_fde:
+    path: ../plugins/flutter_plugins/shared_preferences_fde
+
 
 dev_dependencies:
   flutter_test:

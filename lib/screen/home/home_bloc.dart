@@ -21,7 +21,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Stream<HomeState> mapEventToState(
     HomeEvent event,
   ) async* {
-    if (event is UpdateFlavorEvent) {
+    if (event is InitBlocEvent) {
+      final environment = await _shellRepository.getDevEnvironment();
+      yield HomeIdleState(
+        flavors: currentState.flavors,
+        buildConfig:
+            currentState.buildConfig.copyWith(devEnvironment: environment),
+      );
+    } else if (event is UpdateFlavorEvent) {
       yield HomeIdleState(
         flavors: currentState.flavors,
         buildConfig: currentState.buildConfig.copyWith(
@@ -81,6 +88,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           needRefreshNavtiveLibraries: event.value,
         ),
       );
+    } else if (event is UpdateEnvironmentEvent) {
+      yield HomeIdleState(
+        flavors: currentState.flavors,
+        buildConfig: currentState.buildConfig
+            .copyWith(devEnvironment: event.devEnvironment),
+      );
+      _shellRepository.saveDevEnvironment(event.devEnvironment);
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:avatar_glow/avatar_glow.dart';
 import 'package:example_flutter/helper/widget/gradient_button.dart';
 import 'package:example_flutter/model/build_config.dart';
 import 'package:example_flutter/screen/home/bloc.dart';
+import 'package:example_flutter/screen/home/config_dialog/config_dialog.dart';
 import 'package:example_flutter/screen/home/log_section/log_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,10 +24,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _scrollController = ScrollController();
-
   @override
-  void initState() {}
+  void initState() {
+    BlocProvider.of<HomeBloc>(context).dispatch(InitBlocEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             CommandColumn(),
             Expanded(
-              child: LogSection.newInstance(),
+              child: Column(
+                children: <Widget>[
+                  TopMenuSection(),
+                  Expanded(
+                    child: LogSection.newInstance(),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -148,15 +156,11 @@ class BuildButton extends StatelessWidget {
                 AnimatedContainer(
                   duration: Duration(milliseconds: 400),
                   padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: RaisedGradientButton(
+                  child: HomeButton(
                       height: 50,
                       width: state is HomeIdleState ? constraint.maxWidth : 50,
-                      splashColor: Colors.blue.withOpacity(0.5),
                       child: title,
-                      gradient: LinearGradient(
-                        colors: gradientColor,
-                      ),
-                      borderRadius: BorderRadius.circular(50),
+                      gradientColors: gradientColor,
                       onPressed: () {
                         FocusScope.of(context).requestFocus(FocusNode());
                         final bloc = BlocProvider.of<HomeBloc>(context);
@@ -527,5 +531,124 @@ class CircularCheckBox extends StatelessWidget {
             : Container(),
       ),
     );
+  }
+}
+
+class HomeTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final FocusNode focusNode;
+
+  const HomeTextField({Key key, this.controller, this.hintText, this.focusNode})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 4,
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(50),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+        child: TextField(
+          controller: controller,
+          focusNode: focusNode,
+          textAlign: TextAlign.left,
+          decoration: InputDecoration(
+              disabledBorder: InputBorder.none,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              hintText: hintText,
+              hintStyle: TextStyle(
+                fontSize: 14,
+                fontFamily: "DroidSans",
+                fontWeight: FontWeight.normal,
+                color: Colors.grey,
+              )),
+        ),
+      ),
+    );
+  }
+}
+
+class TopMenuSection extends StatefulWidget {
+  @override
+  _TopMenuSectionState createState() => _TopMenuSectionState();
+}
+
+class _TopMenuSectionState extends State<TopMenuSection> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        return Container(
+          margin: EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: <Widget>[
+              Spacer(),
+              HomeButton(
+                height: 50,
+                width: 50,
+                onPressed: () async {
+                  final result = await showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) {
+                        return ConfigDialog(
+                          devEnvironment: state.buildConfig.devEnvironment,
+                        );
+                      });
+                  if (result != null) {
+                    BlocProvider.of<HomeBloc>(context).dispatch(
+                        UpdateEnvironmentEvent(devEnvironment: result));
+                  }
+                },
+                child: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                width: 12,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class HomeButton extends StatelessWidget {
+  final double width;
+  final double height;
+  final Widget child;
+  final Function onPressed;
+  final List<Color> gradientColors;
+
+  const HomeButton(
+      {Key key,
+      this.width,
+      this.height,
+      this.onPressed,
+      this.child,
+      this.gradientColors = const <Color>[
+        Color(0xFFF9D976),
+        Color(0xFFF39F86),
+      ]})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RaisedGradientButton(
+        height: height,
+        width: width,
+        splashColor: Color(0xFFF9D976).withOpacity(0.5),
+        child: child,
+        gradient: LinearGradient(
+          colors: gradientColors,
+        ),
+        borderRadius: BorderRadius.circular(50),
+        onPressed: onPressed);
   }
 }

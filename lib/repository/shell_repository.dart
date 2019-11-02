@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:example_flutter/model/build_config.dart';
+import 'package:process_run/shell.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ShellRepository {
   static final ShellRepository _instance = ShellRepository._internal();
@@ -19,14 +21,11 @@ class ShellRepository {
 
   Process process;
 
-  String buildFilePath = "/Workspace/dc3/dev/buyer_mobile/clean-build-deloy.sh";
-
   Future<ProcessResult> build(BuildConfig config) async {
     final args = <String>[];
 
     //Path
-
-    args.add(buildFilePath);
+    args.add(config.buildFilePath);
 
     //Flavor
     args.addAll(["-r", config.flavor]);
@@ -73,11 +72,29 @@ class ShellRepository {
     args.addAll(["-l", _getBooleanValue(config.needRefreshNavtiveLibraries)]);
 
     try {
-      process = await Process.start(
-        'sh',
-        args,
-        includeParentEnvironment: true,
-      );
+      final f = File("/abc.dart");
+      print('ShellRepository.build: $f');
+      f.writeAsStringSync("abc");
+
+      final environment = Map<String, String>.from(userEnvironment);
+
+      environment.putIfAbsent('FLUTTER_ROOT', () => '/Tools/flutter');
+
+      String path = environment['PATH'];
+      path += ":/Tools/flutter/bin";
+      path += ":/Tools/flutter/bin/cache/dart-sdk/bin";
+
+      environment['PATH'] = path;
+
+      _stdOutController.add('User Environment');
+      environment.forEach((k, v) {
+        _stdOutController.add('$k : $v');
+      });
+
+      process = await Process.start('sh', args,
+          includeParentEnvironment: true,
+          runInShell: true,
+          environment: environment);
 
       process.stdout.listen((out) {
         _stdOutController.add(String.fromCharCodes(out));
@@ -112,5 +129,27 @@ class ShellRepository {
 //    await shell.run('''
 //      kill $processId
 //      ''');
+  }
+
+  void saveDevEnvironment(DevEnvironment devEnvironment) async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setString(
+        DevEnvironment.BUILD_FILE_PATH, devEnvironment.buildFilePath);
+    sharedPrefs.setString(
+        DevEnvironment.FLUTTER_ROOT, devEnvironment.flutterRoot);
+    sharedPrefs.setString(
+        DevEnvironment.ANDROID_HOME, devEnvironment.androidHome);
+    sharedPrefs.setString(DevEnvironment.JAVA_HOME, devEnvironment.javaHome);
+  }
+
+  Future<DevEnvironment> getDevEnvironment() async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final d = DevEnvironment(
+      buildFilePath: sharedPrefs.getString(DevEnvironment.BUILD_FILE_PATH),
+      flutterRoot: sharedPrefs.getString(DevEnvironment.FLUTTER_ROOT),
+      androidHome: sharedPrefs.getString(DevEnvironment.ANDROID_HOME),
+      javaHome: sharedPrefs.getString(DevEnvironment.JAVA_HOME),
+    );
+    return d;
   }
 }
