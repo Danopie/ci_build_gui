@@ -25,7 +25,7 @@ class ShellRepository {
     final args = <String>[];
 
     //Path
-    args.add(config.buildFilePath);
+    args.add(config.devEnvironment.buildFilePath);
 
     //Flavor
     args.addAll(["-r", config.flavor]);
@@ -72,17 +72,23 @@ class ShellRepository {
     args.addAll(["-l", _getBooleanValue(config.needRefreshNavtiveLibraries)]);
 
     try {
-      final f = File("/abc.dart");
-      print('ShellRepository.build: $f');
-      f.writeAsStringSync("abc");
-
       final environment = Map<String, String>.from(userEnvironment);
 
-      environment.putIfAbsent('FLUTTER_ROOT', () => '/Tools/flutter');
+      environment.putIfAbsent(
+          'JAVA_HOME', () => config.devEnvironment.javaHome);
+      environment.putIfAbsent(
+          'ANDROID_HOME', () => config.devEnvironment.androidHome);
+      environment.putIfAbsent(
+          'FLUTTER_ROOT', () => config.devEnvironment.flutterRoot);
 
       String path = environment['PATH'];
-      path += ":/Tools/flutter/bin";
-      path += ":/Tools/flutter/bin/cache/dart-sdk/bin";
+      path += ":${config.devEnvironment.flutterRoot}/bin";
+      path += ":${config.devEnvironment.flutterRoot}/bin/cache/dart-sdk/bin";
+      path += ":${config.devEnvironment.androidHome}/build-tools/28.0.3";
+      path += ":${config.devEnvironment.androidHome}/platform-tools";
+      path += ":${config.devEnvironment.androidHome}/tools";
+      path += ":${config.devEnvironment.androidHome}/tools/bin";
+      path += ":${config.devEnvironment.androidHome}/tools/proguard/lib";
 
       environment['PATH'] = path;
 

@@ -19,12 +19,9 @@ class BuildConfig {
   final bool needPackagesGet;
   final bool needRefreshNavtiveLibraries;
 
-  final String buildFilePath;
-
   final DevEnvironment devEnvironment;
 
   factory BuildConfig.defaultConfig() => BuildConfig(
-      buildFilePath: "/Workspace/dc3/stable/clean-build-deloy.sh",
       devEnvironment: DevEnvironment(),
       flavor: 'test',
       branch: '',
@@ -42,8 +39,7 @@ class BuildConfig {
       this.needClean,
       this.needPackagesGet,
       this.needRefreshNavtiveLibraries,
-      this.devEnvironment,
-      this.buildFilePath});
+      this.devEnvironment});
 
   BuildConfig copyWith({
     String flavor,
@@ -63,7 +59,6 @@ class BuildConfig {
       mode: mode ?? this.mode,
       needClean: needClean ?? this.needClean,
       needPackagesGet: needPackagesGet ?? this.needPackagesGet,
-      buildFilePath: buildFilePath ?? this.buildFilePath,
       devEnvironment: devEnvironment ?? this.devEnvironment,
       needRefreshNavtiveLibraries:
           needRefreshNavtiveLibraries ?? this.needRefreshNavtiveLibraries,

@@ -107,7 +107,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
                     Spacer(),
                     HomeButton(
                       height: 50,
-                      width: 50,
+                      width: 100,
                       onPressed: () async {
                         Navigator.of(context).pop(DevEnvironment(
                           buildFilePath: textControllers[0].text,
