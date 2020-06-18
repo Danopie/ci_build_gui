@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:example_flutter/model/build_config.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,23 +12,23 @@ class ShellRepository {
     return _instance;
   }
 
-  ShellRepository._internal() {}
+  ShellRepository._internal();
 
   final _stdOutController = PublishSubject<String>();
   Sink<String> get stdOutSink => _stdOutController.sink;
 
   Stream<String> get logStream => _stdOutController;
 
-  Process process;
+  final dio = Dio(BaseOptions(
+    baseUrl: "http://localhost:8080/",
+    receiveTimeout: 70 * 60000,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  ));
 
-  Future<ProcessResult> build(BuildConfig config) async {
+  Future<Response<String>> build(BuildConfig config) async {
     final args = <String>[];
-
-    //Path
-//    args.add(config.devEnvironment.buildFilePath);
-
-    //Flavor
-    args.addAll(["-r", config.flavor]);
 
     //Debug
     args.addAll(["-d", _getBooleanValue(config.debug)]);
@@ -77,72 +78,45 @@ class ShellRepository {
     args.addAll(["-l", _getBooleanValue(config.needRefreshNavtiveLibraries)]);
 
     try {
-      /*final environment = Map<String, String>.from(userEnvironment);
-
-      environment.putIfAbsent(
-          'JAVA_HOME', () => config.devEnvironment.javaHome);
-      environment.putIfAbsent(
-          'ANDROID_HOME', () => config.devEnvironment.androidHome);
-      environment.putIfAbsent(
-          'FLUTTER_ROOT', () => config.devEnvironment.flutterRoot);
-
-      String path = environment['PATH'];
-      path += ":${config.devEnvironment.flutterRoot}/bin";
-      path += ":${config.devEnvironment.flutterRoot}/bin/cache/dart-sdk/bin";
-      path += ":${config.devEnvironment.androidHome}/build-tools/28.0.3";
-      path += ":${config.devEnvironment.androidHome}/platform-tools";
-      path += ":${config.devEnvironment.androidHome}/tools";
-      path += ":${config.devEnvironment.androidHome}/tools/bin";
-      path += ":${config.devEnvironment.androidHome}/tools/proguard/lib";
-
-      environment['PATH'] = path;
-
-      _stdOutController.add('User Environment');
-      environment.forEach((k, v) {
-        _stdOutController.add('$k : $v');
-      });*/
-
       _stdOutController.add("command: $args");
 
-      /*process = await Process.start('sh', args,
-          includeParentEnvironment: true,
-          runInShell: true,
-          environment: environment);
+      if (config.devEnvironment?.buildFilePath?.isNotEmpty != true) {
+        _stdOutController.add("Error: buildFilePath is empty");
+      } else {
+//        final setPermission = await dio.get(
+//          "exec",
+//          queryParameters: {
+//            "cmd": "chmod +x ${config.devEnvironment?.buildFilePath}",
+//          },
+//        );
+//        _stdOutController.add("setPermission: ${setPermission.data}");
 
-      process.stdout.listen((out) {
-        _stdOutController.add(String.fromCharCodes(out));
-      });
-
-      process.stderr.listen((err) {
-        _stdOutController.add(String.fromCharCodes(err));
-      });
-
-      final exitCode = await process.exitCode;
-      return ProcessResult(
-          process.pid, exitCode, process.stdout, process.stderr);*/
-      return null;
+        final cmd = "${config.devEnvironment?.buildFilePath}" +
+            args.map((e) => " $e").join();
+        print("cmd=$cmd");
+        final result = await dio.get<String>(
+          "exec",
+          queryParameters: {
+            "cmd": cmd,
+          },
+        );
+        _stdOutController.add("${result.data}");
+        return result;
+      }
     } catch (e) {
       _stdOutController.add("Error: ${e.toString()}");
     }
+    return null;
   }
 
   String _getBooleanValue(bool value) => value ? "1" : "0";
 
   Future<dynamic> stopBuild() async {
-    process.kill();
-    _stdOutController.add("Process terminated");
-//    final results = await shell.run('''
-//      ps -ax | grep "${buildFilePath}" | grep -v "grep" | awk '{print \$1}'
-//      ''');
-//
-//    print('ShellRepository.stopBuild: $results');
-//    String processId = results.first.stdout.toString();
-//
-//    print('ShellRepository.stopBuild: $processId');
-//
-//    await shell.run('''
-//      kill $processId
-//      ''');
+    final result = dio.get<String>(
+      "stop",
+    );
+    _stdOutController.add("Process Terminated!");
+    return result;
   }
 
   void saveDevEnvironment(DevEnvironment devEnvironment) async {
