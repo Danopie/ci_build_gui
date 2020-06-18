@@ -57,7 +57,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       yield HomeIdleState(
         flavors: currentState.flavors,
         buildConfig: currentState.buildConfig.copyWith(
-          branch: event.branchName,
+          flutterModule: event.flutterModule,
+          androidModule: event.flutterModule,
+          iosModule: event.iosModule,
         ),
       );
     } else if (event is UpdateBuildModeEvent) {

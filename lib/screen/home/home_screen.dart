@@ -254,10 +254,10 @@ class BuildConfigSection extends StatelessWidget {
                 Container(
                   height: 24,
                 ),
-                _buildFlavorDropdown(context),
-                Container(
-                  height: 24,
-                ),
+//                _buildFlavorDropdown(context),
+//                Container(
+//                  height: 24,
+//                ),
                 _buildModeDropdown(context),
                 Container(
                   height: 24,
@@ -272,37 +272,83 @@ class BuildConfigSection extends StatelessWidget {
   }
 
   Widget _buildBranchTextField(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Material(
-          elevation: 4,
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(50),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            alignment: Alignment.center,
-            child: TextField(
+    return Material(
+      elevation: 4,
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        alignment: Alignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12, top: 12),
+              child: Text(
+                "Branches",
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontFamily: "DroidSans",
+                ),
+              ),
+            ),
+            TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
                   BlocProvider.of<HomeBloc>(context)
-                      .dispatch(UpdateBranchEvent(branchName: str));
+                      .dispatch(UpdateBranchEvent(flutterModule: str));
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
-                    hintText: "Branch",
+                    hintText: "Flutter Module Branch",
                     hintStyle: TextStyle(
                       fontSize: 14,
                       fontFamily: "DroidSans",
                       fontWeight: FontWeight.normal,
                       color: Colors.grey,
                     ))),
-          ),
+            TextField(
+                textAlign: TextAlign.left,
+                onChanged: (str) {
+                  BlocProvider.of<HomeBloc>(context)
+                      .dispatch(UpdateBranchEvent(androidModule: str));
+                },
+                decoration: InputDecoration(
+                    disabledBorder: InputBorder.none,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    hintText: "Android Module Branch",
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      fontFamily: "DroidSans",
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey,
+                    ))),
+            TextField(
+                textAlign: TextAlign.left,
+                onChanged: (str) {
+                  BlocProvider.of<HomeBloc>(context)
+                      .dispatch(UpdateBranchEvent(iosModule: str));
+                },
+                decoration: InputDecoration(
+                    disabledBorder: InputBorder.none,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    hintText: "iOS Module Branch",
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      fontFamily: "DroidSans",
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey,
+                    ))),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -369,7 +415,6 @@ class BuildConfigSection extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: DropdownButton<BuildMode>(
               isExpanded: true,
-              underline: Container(),
               value: state.buildConfig.mode,
               items: BuildMode.values
                   .map((bm) => DropdownMenuItem<BuildMode>(
@@ -386,13 +431,17 @@ class BuildConfigSection extends StatelessWidget {
                       ))
                   .toList(),
               selectedItemBuilder: (context) => BuildMode.values
-                  .map((bm) => Text(
-                        _getBuildModelTitle(bm),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontFamily: "DroidSans",
-                          fontSize: 14,
+                  .map((bm) => Container(
+                        padding: EdgeInsets.only(left: 36),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _getBuildModelTitle(bm),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontFamily: "DroidSans",
+                            fontSize: 14,
+                          ),
                         ),
                       ))
                   .toList(),

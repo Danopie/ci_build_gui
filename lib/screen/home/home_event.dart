@@ -19,10 +19,14 @@ class UpdateFlavorEvent extends HomeEvent {
 }
 
 class UpdateBranchEvent extends HomeEvent {
-  final String branchName;
+  final String flutterModule;
+  final String androidModule;
+  final String iosModule;
 
   UpdateBranchEvent({
-    this.branchName,
+    this.flutterModule,
+    this.androidModule,
+    this.iosModule,
   });
 }
 

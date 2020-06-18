@@ -10,7 +10,9 @@ enum BuildMode {
 
 class BuildConfig {
   final String flavor;
-  final String branch;
+  final String flutterModule;
+  final String androidModule;
+  final String iosModule;
   final bool debug;
 
   final BuildMode mode;
@@ -24,7 +26,6 @@ class BuildConfig {
   factory BuildConfig.defaultConfig() => BuildConfig(
       devEnvironment: DevEnvironment(),
       flavor: 'test',
-      branch: '',
       debug: false,
       mode: BuildMode.Normal,
       needClean: true,
@@ -33,7 +34,9 @@ class BuildConfig {
 
   const BuildConfig(
       {this.flavor,
-      this.branch,
+      this.flutterModule,
+      this.androidModule,
+      this.iosModule,
       this.debug,
       this.mode,
       this.needClean,
@@ -43,25 +46,28 @@ class BuildConfig {
 
   BuildConfig copyWith({
     String flavor,
-    String branch,
+    String flutterModule,
+    String androidModule,
+    String iosModule,
     bool debug,
     BuildMode mode,
     bool needClean,
     bool needPackagesGet,
     bool needRefreshNavtiveLibraries,
     DevEnvironment devEnvironment,
-    String buildFilePath,
   }) {
-    return BuildConfig(
+    return new BuildConfig(
       flavor: flavor ?? this.flavor,
-      branch: branch ?? this.branch,
+      flutterModule: flutterModule ?? this.flutterModule,
+      androidModule: androidModule ?? this.androidModule,
+      iosModule: iosModule ?? this.iosModule,
       debug: debug ?? this.debug,
       mode: mode ?? this.mode,
       needClean: needClean ?? this.needClean,
       needPackagesGet: needPackagesGet ?? this.needPackagesGet,
-      devEnvironment: devEnvironment ?? this.devEnvironment,
       needRefreshNavtiveLibraries:
           needRefreshNavtiveLibraries ?? this.needRefreshNavtiveLibraries,
+      devEnvironment: devEnvironment ?? this.devEnvironment,
     );
   }
 }

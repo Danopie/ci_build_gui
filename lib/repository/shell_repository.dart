@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:example_flutter/model/build_config.dart';
-import 'package:process_run/shell.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,8 +33,14 @@ class ShellRepository {
     args.addAll(["-d", _getBooleanValue(config.debug)]);
 
     //Branch
-    if (config.branch.isNotEmpty) {
-      args.addAll(["-n", config.branch]);
+    if (config.flutterModule?.isNotEmpty == true) {
+      args.addAll(["-n", config.flutterModule]);
+    }
+    if (config.androidModule?.isNotEmpty == true) {
+      args.addAll(["-q", config.androidModule]);
+    }
+    if (config.iosModule?.isNotEmpty == true) {
+      args.addAll(["-w", config.iosModule]);
     }
 
     //Build Mode
@@ -72,7 +77,7 @@ class ShellRepository {
     args.addAll(["-l", _getBooleanValue(config.needRefreshNavtiveLibraries)]);
 
     try {
-      final environment = Map<String, String>.from(userEnvironment);
+      /*final environment = Map<String, String>.from(userEnvironment);
 
       environment.putIfAbsent(
           'JAVA_HOME', () => config.devEnvironment.javaHome);
@@ -95,9 +100,11 @@ class ShellRepository {
       _stdOutController.add('User Environment');
       environment.forEach((k, v) {
         _stdOutController.add('$k : $v');
-      });
+      });*/
 
-      process = await Process.start('sh', args,
+      _stdOutController.add("command: $args");
+
+      /*process = await Process.start('sh', args,
           includeParentEnvironment: true,
           runInShell: true,
           environment: environment);
@@ -112,7 +119,8 @@ class ShellRepository {
 
       final exitCode = await process.exitCode;
       return ProcessResult(
-          process.pid, exitCode, process.stdout, process.stderr);
+          process.pid, exitCode, process.stdout, process.stderr);*/
+      return null;
     } catch (e) {
       _stdOutController.add("Error: ${e.toString()}");
     }
