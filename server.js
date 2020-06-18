@@ -4,6 +4,8 @@ var Uri = require('url');
 
 //create a server object:
 Http.createServer(function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin","*");
+    res.setHeader("Access-Control-Allow-Headers","*");
     var reqData = Uri.parse(req.url, true);
     var params = reqData.query;
     console.log(`Request: ${req.url}`);
@@ -19,7 +21,21 @@ Http.createServer(function (req, res) {
             console.log(`cmd: ${cmd}`);
             console.log(`PATH: ${process.env.PATH}`);
 
-            exec(cmd, (error, stdout, stderr) => {
+            var child = spawn(cmd, [], {shell: true});
+            child.stdout.on('data',
+                function (data) {
+                    res.write(`${data}`);
+                });
+            child.stderr.on('data', function (data) {
+                res.write(`error: ${data}`);
+            });
+            child.on('close', function (code) {
+                res.write('child process exited with code ' + code);
+                res.end();
+            });
+
+
+            /*exec(cmd, (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error.message}`);
                     res.write(`error: ${error.message}`);
@@ -35,7 +51,7 @@ Http.createServer(function (req, res) {
                 console.log(`stdout: ${stdout}`);
                 res.write(`data: ${stdout}`); //write a response to the client
                 res.end(); //end the response
-            });
+            });*/
         }
 
     } else if (reqData.path.startsWith("/stop")) {

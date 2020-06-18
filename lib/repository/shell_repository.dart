@@ -24,6 +24,7 @@ class ShellRepository {
     receiveTimeout: 70 * 60000,
     headers: {
       "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "*",
     },
   ));
 
