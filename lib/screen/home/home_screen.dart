@@ -38,8 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            CommandColumn(),
+            Expanded(child: CommandColumn()),
             Expanded(
+              flex: 2,
               child: Column(
                 children: <Widget>[
                   TopMenuSection(),
@@ -69,6 +70,12 @@ class BackgroundSection extends StatelessWidget {
                 ? [Color(0xFFeb3349), Color(0xFFf45c43)]
                 : [Colors.lightBlueAccent, Colors.blue],
           )),
+          alignment: Alignment.centerLeft,
+          child: Image.network(
+            "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
+            height: double.infinity,
+            fit: BoxFit.fitHeight,
+          ),
         );
       },
     );
@@ -84,15 +91,21 @@ class CommandColumn extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 24),
       width: 300,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            "LyLy",
-            style: TextStyle(
-                fontFamily: "Vegan",
-                fontSize: 30,
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
-                shadows: [Shadow(color: Colors.black12, offset: Offset(0, 3))]),
+          Padding(
+            padding: const EdgeInsets.only(left: 24),
+            child: Text(
+              "LyLy",
+              style: TextStyle(
+                  fontFamily: "Vegan",
+                  fontSize: 30,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(color: Colors.black12, offset: Offset(0, 3))
+                  ]),
+            ),
           ),
           AvatarGlow(
             startDelay: Duration(milliseconds: 1000),
@@ -113,9 +126,9 @@ class CommandColumn extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: BuildConfigSection(),
-          ),
+          Expanded(child: Container()),
+          BuildConfigSection(),
+          const SizedBox(height: 20),
           BuildButton(),
         ],
       ),
