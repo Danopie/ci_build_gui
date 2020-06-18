@@ -34,8 +34,9 @@ class _LogSectionState extends State<LogSection> {
           });
         });
         return Container(
+          padding: const EdgeInsets.only(right: 16, bottom: 16),
           child: Material(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(24),
             color: Colors.white,
             elevation: 8,
             child: ListView.builder(
