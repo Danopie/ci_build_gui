@@ -24,7 +24,7 @@ class ShellRepository {
     final args = <String>[];
 
     //Path
-    args.add(config.devEnvironment.buildFilePath);
+//    args.add(config.devEnvironment.buildFilePath);
 
     //Flavor
     args.addAll(["-r", config.flavor]);
