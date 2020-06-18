@@ -11,36 +11,45 @@ Http.createServer(function (req, res) {
     if (reqData.path.startsWith("/exec")) {
         var cmd = params.cmd;
         if (cmd == null) {
-            cmd = "error: cmd is null";
-        }
-        console.log(`cmd: ${cmd}`);
-
-        var child = spawn(cmd, ['']);
-
-        child.stdout.on('data', function (data) {
-          console.log('stdout: ' + data);
-          res.write(`data: ${stdout}`);
-        });
-
-        child.stderr.on('data', function (data) {
-          console.log('stderr: ' + data);
-          res.write(`error: ${error.message}`);
-        });
-
-        child.on('close', function (code) {
-            console.log('child process exited with code ' + code);
+            var message = "error: cmd is null";
+            console.log(message);
+            res.write(message);
             res.end();
-        });
+        } else {
+            console.log(`cmd: ${cmd}`);
+            console.log(`PATH: ${process.env.PATH}`);
 
-    }else if(reqData.path.startsWith("/stop")){
+            exec(cmd, (error, stdout, stderr) => {
+                if (error) {
+                    console.log(`error: ${error.message}`);
+                    res.write(`error: ${error.message}`);
+                    res.end();
+                    return;
+                }
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+                    res.write(`error: ${stderr}`);
+                    res.end();
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+                res.write(`data: ${stdout}`); //write a response to the client
+                res.end(); //end the response
+            });
+        }
+
+    } else if (reqData.path.startsWith("/stop")) {
         exec("exit 0", (error, stdout, stderr) => {
             if (error) {
                 console.log(`error: ${error.message}`);
                 res.write(`error: ${error.message}`);
+                res.end();
                 return;
             }
             if (stderr) {
                 console.log(`stderr: ${stderr}`);
+                res.write(`error: ${stderr}`);
+                res.end();
                 return;
             }
             console.log(`stdout: ${stdout}`);
