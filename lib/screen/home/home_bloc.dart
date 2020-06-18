@@ -48,7 +48,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         buildConfig: currentState.buildConfig,
       );
     } else if (event is StopBuildEvent) {
-      await _shellRepository.stopBuild();
+      _shellRepository.stopBuild();
       yield HomeIdleState(
         flavors: currentState.flavors,
         buildConfig: currentState.buildConfig,
