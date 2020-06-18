@@ -18,3 +18,4 @@ lib/generated_plugin_registrant.dart
 .flutter-plugins-dependencies
 .metadata
 *.iml
+.DS_Store
