@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert' as json;
 
 import 'package:dio/dio.dart';
 import 'package:example_flutter/model/build_config.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_socket_channel/html.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ShellRepository {
   static final ShellRepository _instance = ShellRepository._internal();
@@ -14,21 +17,62 @@ class ShellRepository {
 
   ShellRepository._internal();
 
+  void connect() {
+    _socketChannel = HtmlWebSocketChannel.connect("ws://127.0.0.1:8080");
+    _socketChannel.stream.listen(
+      (message) {
+//        _stdOutController.add("onReceived: $message");
+        try {
+          final serverObj = json.jsonDecode(message);
+          if (serverObj != null) {
+            if (serverObj["code"] != 1) {
+              //error
+              _stdOutController.add("onReceived: ${serverObj["message"]}");
+            } else if (serverObj["code"] == 1) {
+              //ok
+              if (serverObj["log"] != null) {
+                _stdOutController.add("${serverObj["log"]}\n");
+              } else {
+                _stdOutController.add("onReceived: ${serverObj["message"]}");
+              }
+            }
+          }
+        } catch (e) {
+          print(e);
+        }
+      },
+      onError: (e) {
+        _stdOutController.add("onError: $e");
+      },
+      onDone: () {
+        _stdOutController.add("onDone!");
+      },
+      cancelOnError: false,
+    );
+  }
+
   final _stdOutController = PublishSubject<String>();
   Sink<String> get stdOutSink => _stdOutController.sink;
-
   Stream<String> get logStream => _stdOutController;
 
-  final dio = Dio(BaseOptions(
-    baseUrl: "http://localhost:8080/",
-    receiveTimeout: 70 * 60000,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "*",
-    },
-  ));
+  bool _permissionGranted = false;
 
-  Future<Response<String>> build(BuildConfig config) async {
+  WebSocketChannel _socketChannel;
+
+  void setPermission(BuildConfig config) async {
+    if (_permissionGranted) {
+      return;
+    }
+    _socketChannel.sink.add(json.jsonEncode({
+      "type": "exec",
+      "cmd": "chmod +x ${config.devEnvironment?.buildFilePath}",
+    }));
+    _permissionGranted = true;
+    _stdOutController
+        .add("Granted permission for ${config.devEnvironment?.buildFilePath}");
+  }
+
+  Future<Response<dynamic>> build(BuildConfig config) async {
     final args = <String>[];
 
     //Debug
@@ -79,30 +123,21 @@ class ShellRepository {
     args.addAll(["-l", _getBooleanValue(config.needRefreshNavtiveLibraries)]);
 
     try {
+      setPermission(config);
+
       _stdOutController.add("command: $args");
 
       if (config.devEnvironment?.buildFilePath?.isNotEmpty != true) {
         _stdOutController.add("Error: buildFilePath is empty");
       } else {
-//        final setPermission = await dio.get(
-//          "exec",
-//          queryParameters: {
-//            "cmd": "chmod +x ${config.devEnvironment?.buildFilePath}",
-//          },
-//        );
-//        _stdOutController.add("setPermission: ${setPermission.data}");
-
         final cmd = "${config.devEnvironment?.buildFilePath}" +
             args.map((e) => " $e").join();
         print("cmd=$cmd");
-        final result = await dio.get<String>(
-          "exec",
-          queryParameters: {
-            "cmd": cmd,
-          },
-        );
-        _stdOutController.add("${result.data}");
-        return result;
+        _socketChannel.sink.add(json.jsonEncode({
+          "type": "exec",
+          "cmd": cmd,
+        }));
+        return null;
       }
     } catch (e) {
       _stdOutController.add("Error: ${e.toString()}");
@@ -113,11 +148,11 @@ class ShellRepository {
   String _getBooleanValue(bool value) => value ? "1" : "0";
 
   Future<dynamic> stopBuild() async {
-    final result = dio.get<String>(
-      "stop",
-    );
+    _socketChannel.sink.add(json.jsonEncode({
+      "type": "stop",
+    }));
     _stdOutController.add("Process Terminated!");
-    return result;
+    return null;
   }
 
   void saveDevEnvironment(DevEnvironment devEnvironment) async {
