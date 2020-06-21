@@ -1,4 +1,3 @@
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:example_flutter/helper/widget/gradient_button.dart';
 import 'package:example_flutter/model/build_config.dart';
 import 'package:example_flutter/screen/home/bloc.dart';
@@ -6,6 +5,9 @@ import 'package:example_flutter/screen/home/config_dialog/config_dialog.dart';
 import 'package:example_flutter/screen/home/log_section/log_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+const double _padding = 24;
+const int _controlOpacity = 255;
 
 class HomeScreen extends StatefulWidget {
   static Widget newInstance() {
@@ -32,28 +34,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-      children: <Widget>[
-        BackgroundSection(),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Expanded(child: CommandColumn()),
-            Expanded(
-              flex: 2,
-              child: Column(
-                children: <Widget>[
-                  TopMenuSection(),
-                  Expanded(
-                    child: LogSection.newInstance(),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          BackgroundSection(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(
+                child: Stack(
+                  children: [
+                    lylyBackground(),
+                    CommandColumn(),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ));
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    TopMenuSection(),
+                    Expanded(
+                      child: LogSection.newInstance(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget lylyBackground() {
+    return Image.network(
+      "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
+      height: double.infinity,
+      fit: BoxFit.fitHeight,
+    );
   }
 }
 
@@ -66,16 +84,13 @@ class BackgroundSection extends StatelessWidget {
           duration: Duration(milliseconds: 400),
           decoration: BoxDecoration(
               gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: state is HomeBuildingState
-                ? [Color(0xFFeb3349), Color(0xFFf45c43)]
-                : [Colors.lightBlueAccent, Colors.blue],
+                ? [Color(0xFFf45c43), Color(0xFFeb3349)]
+                : [Color(0xff825934), Color(0xff825934), Color(0xff0f0c0b)],
           )),
           alignment: Alignment.centerLeft,
-          child: Image.network(
-            "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
-            height: double.infinity,
-            fit: BoxFit.fitHeight,
-          ),
         );
       },
     );
@@ -88,13 +103,13 @@ class CommandColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 24),
-      width: 300,
+      width: (MediaQuery.of(context).size.width / 2 - _padding * 2) * 2 / 3,
+      padding: EdgeInsets.all(_padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(left: 24),
+            padding: const EdgeInsets.only(bottom: _padding),
             child: Text(
               "LyLy",
               style: TextStyle(
@@ -107,28 +122,31 @@ class CommandColumn extends StatelessWidget {
                   ]),
             ),
           ),
-          AvatarGlow(
-            startDelay: Duration(milliseconds: 1000),
-            glowColor: Colors.blue,
-            endRadius: 60.0,
-            duration: Duration(milliseconds: 2000),
-            repeat: true,
-            showTwoGlows: true,
-            repeatPauseDuration: Duration(milliseconds: 100),
-            child: Material(
-              elevation: 8.0,
-              shape: CircleBorder(),
-              clipBehavior: Clip.hardEdge,
-              child: CircleAvatar(
-                backgroundColor: Colors.grey[100],
-                child: Image.asset(lyLy, fit: BoxFit.contain),
-                radius: 40.0,
+          /*Align(
+            alignment: Alignment.centerLeft,
+            child: AvatarGlow(
+              startDelay: Duration(milliseconds: 1000),
+              glowColor: Colors.blue,
+              endRadius: 60.0,
+              duration: Duration(milliseconds: 2000),
+              repeat: true,
+              showTwoGlows: true,
+              repeatPauseDuration: Duration(milliseconds: 100),
+              child: Material(
+                elevation: 8.0,
+                shape: CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[100],
+                  child: Image.asset(lyLy, fit: BoxFit.contain),
+                  radius: 40.0,
+                ),
               ),
             ),
-          ),
+          ),*/
           Expanded(child: Container()),
           BuildConfigSection(),
-          const SizedBox(height: 20),
+          const SizedBox(height: _padding),
           BuildButton(),
         ],
       ),
@@ -168,7 +186,6 @@ class BuildButton extends StatelessWidget {
                 ),
                 AnimatedContainer(
                   duration: Duration(milliseconds: 400),
-                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: HomeButton(
                       height: 50,
                       width: state is HomeIdleState ? constraint.maxWidth : 50,
@@ -257,27 +274,24 @@ class BuildConfigSection extends StatelessWidget {
       builder: (context, state) {
         return IgnorePointer(
           ignoring: state is HomeBuildingState,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                _buildBranchTextField(context),
-                Container(
-                  height: 24,
-                ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              _buildBranchTextField(context),
+              Container(
+                height: _padding,
+              ),
 //                _buildFlavorDropdown(context),
 //                Container(
-//                  height: 24,
+//                  height: _padding,
 //                ),
-                _buildModeDropdown(context),
-                Container(
-                  height: 24,
-                ),
-                _buildCheckList(context)
-              ],
-            ),
+              _buildModeDropdown(context),
+              Container(
+                height: _padding,
+              ),
+              _buildCheckList(context)
+            ],
           ),
         );
       },
@@ -287,8 +301,8 @@ class BuildConfigSection extends StatelessWidget {
   Widget _buildBranchTextField(BuildContext context) {
     return Material(
       elevation: 4,
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
+      color: Colors.white.withAlpha(_controlOpacity),
+      borderRadius: BorderRadius.circular(_padding),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         alignment: Alignment.center,
@@ -481,7 +495,7 @@ class BuildConfigSection extends StatelessWidget {
                 _bloc.dispatch(UpdateNeedCleanEvent(value: value));
               }),
               Container(
-                height: 24,
+                height: _padding,
               ),
               _buildCheckBox(
                   context, "Packages Get", state.buildConfig.needPackagesGet,
@@ -489,7 +503,7 @@ class BuildConfigSection extends StatelessWidget {
                 _bloc.dispatch(UpdatePackagesGetEvent(value: value));
               }),
               Container(
-                height: 24,
+                height: _padding,
               ),
               _buildCheckBox(context, "Refresh Native",
                   state.buildConfig.needRefreshNavtiveLibraries, (value) {
@@ -577,8 +591,8 @@ class CircularCheckBox extends StatelessWidget {
       },
       child: AnimatedContainer(
         duration: Duration(milliseconds: 150),
-        height: 24,
-        width: 24,
+        height: _padding,
+        width: _padding,
         decoration: BoxDecoration(
           color: value ? Color(0xFFF39F86) : null,
           shape: BoxShape.circle,
@@ -611,7 +625,7 @@ class HomeTextField extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(50),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: _padding, vertical: 6),
         child: TextField(
           controller: controller,
           focusNode: focusNode,

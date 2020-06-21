@@ -37,7 +37,7 @@ class _LogSectionState extends State<LogSection> {
           padding: const EdgeInsets.only(right: 16, bottom: 16),
           child: Material(
             borderRadius: BorderRadius.circular(24),
-            color: Colors.white.withAlpha(80),
+            color: Colors.white,
             elevation: 8,
             child: ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: 36, vertical: 24),
