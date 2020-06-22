@@ -17,7 +17,9 @@ class SocketRepository {
     return _instance;
   }
 
-  SocketRepository._internal(this.domain);
+  SocketRepository._internal(this.domain) {
+    serverStateStream.add(ServerState(connected: false, clientCount: 0));
+  }
 
   final String domain;
   HtmlWebSocketChannel _socketChannel;
@@ -36,9 +38,15 @@ class SocketRepository {
       return;
     }
     _socketChannel = HtmlWebSocketChannel.connect("ws://$domain");
-    print("$TAG: Connected!");
-    updateServerState(serverState.copyWith(connected: true));
-    onServerMessage();
+    if (_socketChannel != null) {
+      print("$TAG: Connected!");
+      updateServerState(serverState.copyWith(connected: true));
+      onServerMessage();
+    } else {
+      print("$TAG: connect fail!");
+      updateServerState(
+          serverState.copyWith(connected: false, error: "connect fail"));
+    }
   }
 
   Future<dynamic> disconnect() async {
@@ -74,7 +82,7 @@ class SocketRepository {
         }
       },
       onError: (e) {
-        onServerMessageError(e);
+        onServerMessageError(e?.toString());
       },
       onDone: () {
         print("$TAG: Disconnected!");
@@ -97,10 +105,14 @@ class SocketRepository {
   }
 
   void sendToServer(dynamic data) {
+    if (_socketChannel == null) {
+      print("$TAG._sendToServer: not connected to Server");
+      return;
+    }
     if (data is String) {
-      _socketChannel.sink.add(data);
+      _socketChannel?.sink?.add(data);
     } else if (data is Map<String, dynamic>) {
-      _socketChannel.sink.add(json.jsonEncode(data));
+      _socketChannel?.sink?.add(json.jsonEncode(data));
     } else {
       print("$TAG._sendToServer: what is $data");
     }

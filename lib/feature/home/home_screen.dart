@@ -1,11 +1,12 @@
 import 'package:example_flutter/feature/config_dialog/build_config.dart';
-import 'package:example_flutter/feature/home/home_state.dart';
 import 'package:example_flutter/feature/log_section/log_section.dart';
-import 'package:example_flutter/helper/widget/gradient_button.dart';
+import 'package:example_flutter/helper/widget/circular_loading.dart';
+import 'package:example_flutter/helper/widget_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:lightweight_bloc/lightweight_bloc.dart';
 
 import 'home_bloc.dart';
+import 'home_state.dart';
 
 const double _padding = 24;
 final _controlBackgroundColor = Colors.white.withAlpha(150);
@@ -35,14 +36,16 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              BackgroundSection(),
               lylyBackground(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Expanded(
-                    child: CommandColumn(),
+                    child: CommandColumn(
+                      bloc: bloc,
+                      state: state,
+                    ),
                   ),
                   Expanded(child: SizedBox()),
                   Expanded(
@@ -51,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: LogSection.newInstance(),
                         ),
-                        BuildButton(),
+                        BuildButton(bloc, state),
                         Expanded(child: SizedBox()),
                       ],
                     ),
@@ -124,7 +127,9 @@ class BackgroundSection extends StatelessWidget {
 }
 
 class CommandColumn extends StatelessWidget {
-  const CommandColumn({Key key}) : super(key: key);
+  final HomeBloc bloc;
+  final HomeState state;
+  const CommandColumn({Key key, this.bloc, this.state}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +153,10 @@ class CommandColumn extends StatelessWidget {
             ),
           ),
           Expanded(child: SizedBox()),
-          BuildConfigSection(),
+          BuildConfigSection(
+            bloc: bloc,
+            state: state,
+          ),
           Expanded(child: SizedBox()),
         ],
       ),
@@ -159,144 +167,86 @@ class CommandColumn extends StatelessWidget {
 }
 
 class BuildButton extends StatelessWidget {
+  final HomeBloc bloc;
+  final HomeState state;
+
+  BuildButton(this.bloc, this.state);
+
   @override
   Widget build(BuildContext context) {
-    return BlocWidgetBuilder<HomeBloc, HomeState>(
-      builder: (context, bloc, state) {
-        final title = state is HomeBuildingState
-            ? Icon(
-                Icons.clear,
-                color: Colors.red,
-              )
-            : Icon(
-                Icons.build,
-                color: Colors.white,
-              );
-        final gradientColor = state is HomeBuildingState
-            ? const [Colors.white, Colors.white]
-            : const <Color>[
-                Color(0xFFF9D976),
-                Color(0xFFF39F86),
-              ];
-        return LayoutBuilder(
-          builder: (context, constraint) {
-            return Stack(
-              alignment: Alignment.center,
-              children: <Widget>[
-                CircularLoading(
-                  enabled: state is HomeBuildingState,
-                ),
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 400),
-                  child: HomeButton(
-                      height: 50,
-                      width: state is HomeIdleState ? constraint.maxWidth : 50,
-                      child: title,
-                      gradientColors: gradientColor,
-                      onPressed: () {
-                        FocusScope.of(context).requestFocus(FocusNode());
-                        final bloc = BlocProvider.of<HomeBloc>(context);
-//                        if (state is HomeIdleState) {
-//                          bloc.dispatch(BuildEvent());
-//                        } else if (state is HomeBuildingState) {
-//                          bloc.dispatch(StopBuildEvent());
-//                        }
-                      }),
-                ),
-              ],
-            );
-          },
+    final busy = state.serverBash?.busy == true;
+
+    final title = busy
+        ? Icon(
+            Icons.clear,
+            color: Colors.red,
+          )
+        : Icon(
+            Icons.build,
+            color: Colors.white,
+          );
+    final gradientColor = busy
+        ? const [Colors.white, Colors.white]
+        : const <Color>[
+            Color(0xFFF9D976),
+            Color(0xFFF39F86),
+          ];
+    return LayoutBuilder(
+      builder: (context, constraint) {
+        return Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            CircularLoading(
+              enabled: busy,
+            ),
+            AnimatedContainer(
+              duration: Duration(milliseconds: 400),
+              child: HomeButton(
+                height: 50,
+                width: state is HomeIdleState ? constraint.maxWidth : 50,
+                child: title,
+                gradientColors: gradientColor,
+                onPressed: () {
+                  FocusScope.of(context).requestFocus(FocusNode());
+                  bloc.requestBuild();
+                },
+              ),
+            ),
+          ],
         );
       },
-    );
-  }
-}
-
-class CircularLoading extends StatefulWidget {
-  final bool enabled;
-
-  const CircularLoading({Key key, this.enabled}) : super(key: key);
-
-  @override
-  _CircularLoadingState createState() => _CircularLoadingState();
-}
-
-class _CircularLoadingState extends State<CircularLoading>
-    with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-
-  @override
-  void initState() {
-    _controller =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 200));
-
-    if (widget.enabled) {
-      _controller.forward();
-    }
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(CircularLoading oldWidget) {
-    if (oldWidget.enabled != widget.enabled) {
-      if (widget.enabled) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _controller,
-      child: Container(
-          child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-          height: 58,
-          width: 58),
     );
   }
 }
 
 class BuildConfigSection extends StatelessWidget {
+  final HomeBloc bloc;
+  final HomeState state;
+
+  const BuildConfigSection({Key key, this.bloc, this.state}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return BlocWidgetBuilder<HomeBloc, HomeState>(
-      builder: (context, bloc, state) {
-        return IgnorePointer(
-          ignoring: state is HomeBuildingState,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _buildBranchTextField(context),
-              Container(
-                height: _padding,
-              ),
-              _buildModeDropdown(context),
-              Container(
-                height: _padding,
-              ),
-              _buildCheckList(context)
-            ],
+    return IgnorePointer(
+      ignoring: state?.serverBash?.busy == true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          _buildBranchTextField(bloc, state),
+          Container(
+            height: _padding,
           ),
-        );
-      },
+          _buildModeDropdown(bloc, state),
+          Container(
+            height: _padding,
+          ),
+          _buildCheckList(bloc, state),
+        ],
+      ),
     );
   }
 
-  Widget _buildBranchTextField(BuildContext context) {
+  Widget _buildBranchTextField(HomeBloc bloc, HomeState state) {
     return Material(
       elevation: 4,
       color: _controlBackgroundColor,
@@ -322,8 +272,7 @@ class BuildConfigSection extends StatelessWidget {
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-//                  BlocProvider.of<HomeBloc>(context)
-//                      .dispatch(UpdateBranchEvent(flutterModule: str));
+                  bloc.onUserInputFlutterModuleBranch(str);
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -338,8 +287,7 @@ class BuildConfigSection extends StatelessWidget {
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-//                  BlocProvider.of<HomeBloc>(context)
-//                      .dispatch(UpdateBranchEvent(androidModule: str));
+                  bloc.onUserInputAndroidModuleBranch(str);
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -354,8 +302,7 @@ class BuildConfigSection extends StatelessWidget {
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-//                  BlocProvider.of<HomeBloc>(context)
-//                      .dispatch(UpdateBranchEvent(iosModule: str));
+                  bloc.onUserInputIOSModuleBranch(str);
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -373,113 +320,67 @@ class BuildConfigSection extends StatelessWidget {
     );
   }
 
-  Widget _buildModeDropdown(BuildContext context) {
-    final _bloc = BlocProvider.of<HomeBloc>(context);
-    return BlocWidgetBuilder<HomeBloc, HomeState>(
-      bloc: _bloc,
-      builder: (context, bloc, state) {
-        return Material(
-          elevation: 4,
-          color: _controlBackgroundColor,
-          borderRadius: BorderRadius.circular(_padding),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButton<BuildMode>(
-              isExpanded: true,
-              value: state.buildConfig.mode,
-              items: BuildMode.values
-                  .map((bm) => DropdownMenuItem<BuildMode>(
-                        value: bm,
-                        child: Text(
-                          _getBuildModelTitle(bm),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ))
-                  .toList(),
-              selectedItemBuilder: (context) => BuildMode.values
-                  .map((bm) => Container(
-                        padding: EdgeInsets.only(left: 36),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _getBuildModelTitle(bm),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ))
-                  .toList(),
-              onChanged: (newValue) {
-//                _bloc.dispatch(UpdateBuildModeEvent(mode: newValue));
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCheckList(BuildContext context) {
-    final _bloc = BlocProvider.of<HomeBloc>(context);
-    return BlocWidgetBuilder<HomeBloc, HomeState>(
-        bloc: _bloc,
-        builder: (context, bloc, state) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _buildCheckBox(
-                  context, "Pub Get", state.buildConfig.needPackagesGet,
-                  (value) {
-//                _bloc.dispatch(UpdatePackagesGetEvent(value: value));
-              }),
-              Container(
-                height: _padding,
-              ),
-              _buildCheckBox(context, "Refresh Native",
-                  state.buildConfig.needRefreshNavtiveLibraries, (value) {
-//                _bloc.dispatch(UpdateRefreshNativeEvent(value: value));
-              }),
-            ],
-          );
-        });
-  }
-
-  Widget _buildCheckBox(BuildContext context, String title, bool value,
-      Function(bool) onChanged) {
+  Widget _buildModeDropdown(HomeBloc bloc, HomeState state) {
     return Material(
       elevation: 4,
       color: _controlBackgroundColor,
       borderRadius: BorderRadius.circular(_padding),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(_padding),
-        onTap: () {
-          onChanged(!value);
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(
-            children: <Widget>[
-              CircularCheckBox(
-                value: value,
-              ),
-              Container(
-                width: 12,
-              ),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.black87,
-                ),
-              )
-            ],
-          ),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: DropdownButton<BuildMode>(
+          isExpanded: true,
+          value: state.buildConfig.mode,
+          items: BuildMode.values
+              .map((bm) => DropdownMenuItem<BuildMode>(
+                    value: bm,
+                    child: Text(
+                      _getBuildModelTitle(bm),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ))
+              .toList(),
+          selectedItemBuilder: (context) => BuildMode.values
+              .map((bm) => Container(
+                    padding: EdgeInsets.only(left: 36),
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _getBuildModelTitle(bm),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ))
+              .toList(),
+          onChanged: (newValue) {
+            bloc.onUserChangedBuildMode(newValue);
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildCheckList(HomeBloc bloc, HomeState state) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        buildCheckBox("Pub Get", state.buildConfig.needPackagesGet, (value) {
+          bloc.onUserChangedPubGet(value);
+        }),
+        Container(
+          height: _padding,
+        ),
+        buildCheckBox(
+            "Refresh Native", state.buildConfig.needRefreshNavtiveLibraries,
+            (value) {
+          bloc.onUserChangedRefreshNative(value);
+        }),
+      ],
     );
   }
 
@@ -487,129 +388,5 @@ class BuildConfigSection extends StatelessWidget {
     final str = bm.toString();
     final dotIndex = str.indexOf(("."));
     return str.substring(dotIndex + 1, str.length);
-  }
-
-  String _getFlavorTitle(String f) {
-    final ch = f[0];
-    return "${ch.toUpperCase()}${f.substring(1)}";
-  }
-}
-
-class Label extends StatelessWidget {
-  final String text;
-
-  const Label({Key key, this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(
-          fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-    );
-  }
-}
-
-class CircularCheckBox extends StatelessWidget {
-  final bool value;
-  final Function(bool) onChanged;
-
-  const CircularCheckBox({Key key, this.value, this.onChanged})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        onChanged(!value);
-      },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 150),
-        height: _padding,
-        width: _padding,
-        decoration: BoxDecoration(
-          color: value ? Color(0xFFF39F86) : null,
-          shape: BoxShape.circle,
-          border: value ? null : Border.all(color: Colors.black45, width: 1),
-        ),
-        child: value
-            ? Icon(
-                Icons.check,
-                size: 18,
-                color: Colors.white,
-              )
-            : Container(),
-      ),
-    );
-  }
-}
-
-class HomeTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final FocusNode focusNode;
-
-  const HomeTextField({Key key, this.controller, this.hintText, this.focusNode})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      elevation: 4,
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: _padding, vertical: 6),
-        child: TextField(
-          controller: controller,
-          focusNode: focusNode,
-          textAlign: TextAlign.left,
-          decoration: InputDecoration(
-              disabledBorder: InputBorder.none,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              hintText: hintText,
-              hintStyle: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.normal,
-                color: Colors.grey,
-              )),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeButton extends StatelessWidget {
-  final double width;
-  final double height;
-  final Widget child;
-  final Function onPressed;
-  final List<Color> gradientColors;
-
-  const HomeButton(
-      {Key key,
-      this.width,
-      this.height,
-      this.onPressed,
-      this.child,
-      this.gradientColors = const <Color>[
-        Color(0xFFF9D976),
-        Color(0xFFF39F86),
-      ]})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return RaisedGradientButton(
-        height: height,
-        width: width,
-        splashColor: Color(0xFFF9D976).withOpacity(0.5),
-        child: child,
-        gradient: LinearGradient(
-          colors: gradientColors,
-        ),
-        borderRadius: BorderRadius.circular(50),
-        onPressed: onPressed);
   }
 }

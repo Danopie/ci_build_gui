@@ -21,7 +21,7 @@ import 'feature/home/home_screen.dart';
 void main() {
   // See https://github.com/flutter/flutter/wiki/Desktop-shells#target-platform-override
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
-
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(new MyApp());
 }
 
