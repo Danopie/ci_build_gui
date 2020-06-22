@@ -23,6 +23,11 @@ dependencies:
   avatar_glow: ^1.2.0
   shared_preferences: ^0.5.7+3
   web_socket_channel: ^1.1.0
+  lightweight_bloc: ^0.0.5+1
+  primitive_type_parser: ^0.0.2
+
+dependency_overrides:
+  provider: ^4.1.2
 
 dev_dependencies:
   flutter_test:

@@ -1,100 +1,6 @@
-const { exec, spawn } = require("child_process");
-
+const { exec, spawn, execFile } = require("child_process");
 var Http = require('http');
 var Uri = require('url');
-
-//create a server object:
-// Http.createServer(function (req, res) {
-//     res.setHeader("Access-Control-Allow-Origin","*");
-//     res.setHeader("Access-Control-Allow-Headers","*");
-//     var reqData = Uri.parse(req.url, true);
-//     var params = reqData.query;
-//     console.log(`Request: ${req.url}`);
-
-//     if (reqData.path.startsWith("/exec")) {
-//         var cmd = params.cmd;
-//         if (cmd == null) {
-//             var message = "error: cmd is null";
-//             console.log(message);
-//             res.write(message);
-//             res.end();
-//         } else {
-//             console.log(`cmd: ${cmd}`);
-//             console.log(`PATH: ${process.env.PATH}`);
-
-// /*
-//             var child = spawn(cmd, [], {shell: true});
-//             child.stdout.on('data',
-//                 function (data) {
-//                     res.write(`${data}`);
-//                 });
-//             child.stderr.on('data', function (data) {
-//                 res.write(`error: ${data}`);
-//             });
-//             child.on('close', function (code) {
-//                 res.write('child process exited with code ' + code);
-//                 res.end();
-//             });
-// */
-
-//             exec(cmd, (error, stdout, stderr) => {
-//                 if (error) {
-//                     console.log(`error: ${error.message}`);
-//                     res.write(`error: ${error.message}`);
-//                     res.end();
-//                     return;
-//                 }
-//                 if (stderr) {
-//                     console.log(`stderr: ${stderr}`);
-//                     res.write(`error: ${stderr}`);
-//                     res.end();
-//                     return;
-//                 }
-// //                console.log(`stdout: ${stdout}`);
-//                 res.write(`successfully`); //write a response to the client
-//                 res.end(); //end the response
-//             });
-//         }
-//     } else if (reqData.path.startsWith("/stop")) {
-//         exec("exit 0", (error, stdout, stderr) => {
-//             if (error) {
-//                 console.log(`error: ${error.message}`);
-//                 res.write(`error: ${error.message}`);
-//                 res.end();
-//                 return;
-//             }
-//             if (stderr) {
-//                 console.log(`stderr: ${stderr}`);
-//                 res.write(`error: ${stderr}`);
-//                 res.end();
-//                 return;
-//             }
-//             console.log(`stdout: ${stdout}`);
-//             res.write(`data: ${stdout}`); //write a response to the client
-//             res.end(); //end the response
-//         });
-//     }
-//      /*else if (reqData.path.startsWith("/log")) {
-//              const filePath =  "/Volumes/data/Workspace/sendo/dev/local_buyer_mobile/log.txt" // or any file format
-
-//                // Check if file specified by the filePath exists
-//                fs.exists(filePath, function(exists){
-//                    if (exists) {
-//                      // Content-type is very interesting part that guarantee that
-//                      // Web browser will handle response in an appropriate manner.
-//                      response.writeHead(200, {
-//                        "Content-Type": "application/octet-stream",
-//                        "Content-Disposition": "attachment; filename=" + fileName
-//                      });
-//                      fs.createReadStream(filePath).pipe(res);
-//                    } else {
-//                      res.writeHead(400, {"Content-Type": "text/plain"});
-//                      res.end("ERROR File does not exist");
-//                    }
-//                  });
-//                }*/
-// }).listen(8080);
-
 const ADDRESS = '127.0.0.1';
 const PORT = 8080;
 const WebSocket = require('ws');
@@ -104,20 +10,24 @@ let _server = new WebSocket.Server(
         address: ADDRESS,
     }
 );
-_server.on('connection', function connection(socket, request) {
+_server.on('connection', function connection(socket) {
     console.log(`A client is connected`);
-    _server.on('message', function incoming(socket, message) {
-        let receivedMessage = `Received from client: ${message}`;
+    socket.send(JSON.stringify({
+        'code': CODE_OK,
+        'log': "Connected successfully!",
+        'clientCount': _server.clients.size,
+        'busy': _processing
+    }));
+    // message listener from server 
+    socket.on('message', function (message) {
+        let receivedMessage = `onMessage: ${message}`;
         console.log(receivedMessage);
-
         onHandleClientMessage(socket, message);
-
-        //   for(var cl of server.clients) {
-        //     cl.send(message);
-        //   }
-        //   console.log("Received the following message:\n" + message);
     });
 });
+
+var _processing = false;
+var _pendingClientMessages = [];
 
 const CODE_OK = 1;
 const CODE_ERROR = 0;
@@ -137,49 +47,85 @@ function onHandleClientMessage(socket, message) {
                 'message': errorMessage
             }));
         } else {
-            var child = spawn(cmd, [], { shell: true });
-            child.stdout.on('data',
-                function (data) {
-                    console.log(`onSpawnData: ${data}`);
-                    socket.send(JSON.stringify({
-                        'code': CODE_OK,
-                        'request': clientObj,
-                        'log': data
-                    }));
-                });
-            child.stderr.on('data', function (data) {
-                console.log(`onSpawnError: ${data}`);
+            if (_processing == true || _pendingClientMessages.length > 0) {
+                _pendingClientMessages.push(message);
                 socket.send(JSON.stringify({
                     'code': CODE_ERROR,
-                    'request': clientObj,
-                    'log': data
+                    'message': "Sắp ra rồi! Anh đợi em xíu nha!"
                 }));
+                return;
+            }
+
+            _processing = true;
+            let _arrays = cmd.split(" ");
+            let _command = _arrays.shift();
+            var child = spawn(_command, _arrays);
+            child.stdout.on('data', function (data) {
+                onSpawn(data, socket, clientObj);
+            });
+            child.stderr.on('data', function (data) {
+                onSpawn(data, socket, clientObj);
             });
             child.on('close', function (code) {
+                _processing = false;
                 let closeMessage = `onSpawnClose: child process exited with code ${code}`;
                 console.log(closeMessage);
                 socket.send(JSON.stringify({
                     'code': CODE_OK,
                     'request': clientObj,
-                    'log': closeMessage
+                    'log': closeMessage,
+                    'clientCount': _server.clients.size,
+                    'busy': _processing
                 }));
+
+                if (_pendingClientMessages.length > 0) {
+                    console.log("handle next pending message.");
+                    socket.send(JSON.stringify({
+                        'code': CODE_OK,
+                        'message': "Mời anh tiếp theo ạ"
+                    }));
+                    onHandleClientMessage(socket, _pendingClientMessages.shift());
+                    return;
+                }else{
+                    stopProcess(socket, clientObj);
+                }
             });
         }
     } else if (clientObj.type == TYPE_STOP) {
-        exec("exit 0", (error, stdout, stderr) => {
-            socket.send(JSON.stringify({
-                'code': CODE_OK,
-                'request': clientObj
-            }));
-            if (error) {
-                console.log(`onStopError: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`onStopError: ${stderr}`);
-                return;
-            }
-            console.log(`onStopOk: ${stdout}`);
-        });
+        stopProcess(socket, clientObj);
     }
+}
+
+function stopProcess(socket, clientObj) {
+    _processing = true;
+    exec("exit 0", (error, stdout, stderr) => {
+        _processing = false;
+        socket.send(JSON.stringify({
+            'code': CODE_OK,
+            'type': TYPE_STOP,
+            'request': clientObj
+        }));
+        if (error) {
+            console.log(`onStopError: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`onStopError: ${stderr}`);
+            return;
+        }
+        console.log(`onStopOk: ${stdout}`);
+    });
+}
+
+function onSpawn(data, socket, clientObj) {
+    console.log(`onSpawn: ${data}`);
+    _server.clients.forEach(cl => {
+        cl.send(JSON.stringify({
+            'code': CODE_OK,
+            'request': clientObj,
+            'log': data.toString(),
+            'clientCount': _server.clients.size,
+            'busy': _processing
+        }));
+    });
 }

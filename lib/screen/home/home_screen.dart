@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     lylyBackground(),
                     CommandColumn(),
+                    serverInfo(),
                   ],
                 ),
               ),
@@ -71,6 +72,32 @@ class _HomeScreenState extends State<HomeScreen> {
       "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
       height: double.infinity,
       fit: BoxFit.fitHeight,
+    );
+  }
+
+  Widget serverInfo() {
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        return Align(
+          alignment: Alignment.topRight,
+          child: Container(
+            margin: EdgeInsets.only(top: 30, right: 16),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              "Có ${1} anh đang đợi!...",
+              style: TextStyle(
+                fontFamily: "DroidSans",
+                color: Colors.black87,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

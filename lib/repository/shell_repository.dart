@@ -18,14 +18,17 @@ class ShellRepository {
   ShellRepository._internal();
 
   void connect() {
-    _socketChannel = HtmlWebSocketChannel.connect("ws://127.0.0.1:8080");
+    _serveInfoController?.close();
+    _serveInfoController = PublishSubject<Map<String, dynamic>>();
+    _socketChannel = HtmlWebSocketChannel.connect("ws://localhost:8080");
     _socketChannel.stream.listen(
       (message) {
 //        _stdOutController.add("onReceived: $message");
         try {
           final serverObj = json.jsonDecode(message);
           if (serverObj != null) {
-            if (serverObj["code"] != 1) {
+            if (serverObj["type"] == "stop") {
+            } else if (serverObj["code"] != 1) {
               //error
               _stdOutController.add("onReceived: ${serverObj["message"]}");
             } else if (serverObj["code"] == 1) {
@@ -46,6 +49,8 @@ class ShellRepository {
       },
       onDone: () {
         _stdOutController.add("onDone!");
+        _socketChannel = null;
+        _serveInfoController?.close();
       },
       cancelOnError: false,
     );
@@ -55,9 +60,15 @@ class ShellRepository {
   Sink<String> get stdOutSink => _stdOutController.sink;
   Stream<String> get logStream => _stdOutController;
 
+  PublishSubject<Map<String, dynamic>> _serveInfoController;
+  Stream<Map<String, dynamic>> get serveInfoStream =>
+      _serveInfoController?.stream;
+
   bool _permissionGranted = false;
 
   WebSocketChannel _socketChannel;
+
+  Stream<dynamic> get socketStream => _socketChannel?.stream;
 
   void setPermission(BuildConfig config) async {
     if (_permissionGranted) {
@@ -72,7 +83,19 @@ class ShellRepository {
         .add("Granted permission for ${config.devEnvironment?.buildFilePath}");
   }
 
+  void testMessage() {
+    _socketChannel.sink.add(json.jsonEncode({
+      "type": "message",
+      "data": "hello LyLy!",
+    }));
+  }
+
   Future<Response<dynamic>> build(BuildConfig config) async {
+    if (_socketChannel == null) connect();
+    await Future.delayed(Duration(seconds: 2));
+//    testMessage();
+//    return null;
+
     final args = <String>[];
 
     //Debug
@@ -137,6 +160,7 @@ class ShellRepository {
           "type": "exec",
           "cmd": cmd,
         }));
+
         return null;
       }
     } catch (e) {
