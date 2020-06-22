@@ -166,7 +166,8 @@ function onHandleClientMessage(socket, message) {
 
 function stopProcess(socket, clientMessage) {
     _processing = true;
-    exec("exit 0", (error, stdout, stderr) => {
+    _pendingClientMessages = [];
+    exec("exit 0 && killall dart -9", (error, stdout, stderr) => {
         _processing = false;
         socket.send(JSON.stringify(generateServerMessage(
             generateServerState(
