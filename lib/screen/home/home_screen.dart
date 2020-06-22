@@ -3,8 +3,10 @@ import 'package:example_flutter/model/build_config.dart';
 import 'package:example_flutter/screen/home/bloc.dart';
 import 'package:example_flutter/screen/home/config_dialog/config_dialog.dart';
 import 'package:example_flutter/screen/home/log_section/log_section.dart';
+import 'package:example_flutter/screen/main/main_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lightweight_bloc/lightweight_bloc.dart' as lw;
 
 const double _padding = 24;
 const int _controlOpacity = 255;
@@ -13,7 +15,10 @@ class HomeScreen extends StatefulWidget {
   static Widget newInstance() {
     return BlocProvider<HomeBloc>(
       builder: (context) => HomeBloc(),
-      child: HomeScreen(),
+      child: lw.BlocProvider(
+        builder: (context) => MainBloc(),
+        child: HomeScreen(),
+      ),
     );
   }
 
@@ -29,41 +34,46 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     BlocProvider.of<HomeBloc>(context).dispatch(InitBlocEvent());
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          BackgroundSection(),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Expanded(
-                child: Stack(
-                  children: [
-                    lylyBackground(),
-                    CommandColumn(),
-                    serverInfo(),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    TopMenuSection(),
-                    Expanded(
-                      child: LogSection.newInstance(),
+    return lw.BlocWidgetBuilder<MainBloc, MainState>(
+      builder: (context, bloc, state) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              BackgroundSection(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        lylyBackground(),
+                        CommandColumn(),
+                        serverInfo(state),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      children: <Widget>[
+                        TopMenuSection(),
+                        Expanded(
+                          child: LogSection.newInstance(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -75,29 +85,31 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget serverInfo() {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        return Align(
-          alignment: Alignment.topRight,
-          child: Container(
-            margin: EdgeInsets.only(top: 30, right: 16),
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              "Có ${1} anh đang đợi!...",
-              style: TextStyle(
-                fontFamily: "DroidSans",
-                color: Colors.black87,
-                fontSize: 14,
-              ),
-            ),
+  Widget serverInfo(MainState state) {
+    var message = "";
+    if (state?.serverState?.connected == true) {
+      message += "Em vẫn thấy anh!";
+    } else {
+      message += "Anh đâu mất òi?!";
+    }
+    return Align(
+      alignment: Alignment.topRight,
+      child: Container(
+        margin: EdgeInsets.only(top: 30, right: 16),
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          message,
+          style: TextStyle(
+            fontFamily: "DroidSans",
+            color: Colors.black87,
+            fontSize: 14,
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

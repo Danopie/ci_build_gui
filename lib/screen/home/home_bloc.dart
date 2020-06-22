@@ -28,8 +28,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         buildConfig:
             currentState.buildConfig.copyWith(devEnvironment: environment),
       );
-
-      _shellRepository.connect();
     } else if (event is UpdateFlavorEvent) {
       yield HomeIdleState(
         flavors: currentState.flavors,
@@ -43,15 +41,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         buildConfig: currentState.buildConfig,
       );
 
-      await _shellRepository.build(currentState.buildConfig);
-
 //      yield HomeIdleState(
 //        flavors: currentState.flavors,
 //        buildConfig: currentState.buildConfig,
 //      );
     } else if (event is StopBuildEvent) {
-      _shellRepository.stopBuild();
-
       yield HomeIdleState(
         flavors: currentState.flavors,
         buildConfig: currentState.buildConfig,
