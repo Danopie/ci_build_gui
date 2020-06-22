@@ -1,8 +1,6 @@
-import 'package:example_flutter/model/build_config.dart';
-import 'package:meta/meta.dart';
+import 'package:example_flutter/feature/config_dialog/build_config.dart';
 
-@immutable
-abstract class HomeState {
+class HomeState {
   final BuildConfig buildConfig;
   final List<String> flavors;
 

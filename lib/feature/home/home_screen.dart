@@ -1,12 +1,12 @@
+import 'package:example_flutter/feature/config_dialog/build_config.dart';
+import 'package:example_flutter/feature/config_dialog/config_dialog.dart';
+import 'package:example_flutter/feature/home/home_state.dart';
+import 'package:example_flutter/feature/log_section/log_section.dart';
 import 'package:example_flutter/helper/widget/gradient_button.dart';
-import 'package:example_flutter/model/build_config.dart';
-import 'package:example_flutter/screen/home/bloc.dart';
-import 'package:example_flutter/screen/home/config_dialog/config_dialog.dart';
-import 'package:example_flutter/screen/home/log_section/log_section.dart';
-import 'package:example_flutter/screen/main/main_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lightweight_bloc/lightweight_bloc.dart' as lw;
+import 'package:lightweight_bloc/lightweight_bloc.dart';
+
+import 'home_bloc.dart';
 
 const double _padding = 24;
 const int _controlOpacity = 255;
@@ -15,10 +15,7 @@ class HomeScreen extends StatefulWidget {
   static Widget newInstance() {
     return BlocProvider<HomeBloc>(
       builder: (context) => HomeBloc(),
-      child: lw.BlocProvider(
-        builder: (context) => MainBloc(),
-        child: HomeScreen(),
-      ),
+      child: HomeScreen(),
     );
   }
 
@@ -32,14 +29,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
-  void initState() {
-    BlocProvider.of<HomeBloc>(context).dispatch(InitBlocEvent());
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return lw.BlocWidgetBuilder<MainBloc, MainState>(
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
       builder: (context, bloc, state) {
         return Scaffold(
           body: Stack(
@@ -85,13 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget serverInfo(MainState state) {
+  Widget serverInfo(HomeState state) {
     var message = "";
-    if (state?.serverState?.connected == true) {
-      message += "Em vẫn thấy anh!";
-    } else {
-      message += "Anh đâu mất òi?!";
-    }
+//    if (state?.serverState?.connected == true) {
+//      message += "Em vẫn thấy anh!";
+//    } else {
+//      message += "Anh đâu mất òi?!";
+//    }
     return Align(
       alignment: Alignment.topRight,
       child: Container(
@@ -104,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Text(
           message,
           style: TextStyle(
-            fontFamily: "DroidSans",
             color: Colors.black87,
             fontSize: 14,
           ),
@@ -115,23 +105,23 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class BackgroundSection extends StatelessWidget {
+  final HomeState state;
+
+  const BackgroundSection({Key key, this.state}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        return AnimatedContainer(
-          duration: Duration(milliseconds: 400),
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: state is HomeBuildingState
-                ? [Color(0xFFf45c43), Color(0xFFeb3349)]
-                : [Color(0xff825934), Color(0xff825934), Color(0xff0f0c0b)],
-          )),
-          alignment: Alignment.centerLeft,
-        );
-      },
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 400),
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: this.state is HomeBuildingState
+            ? [Color(0xFFf45c43), Color(0xFFeb3349)]
+            : [Color(0xff825934), Color(0xff825934), Color(0xff0f0c0b)],
+      )),
+      alignment: Alignment.centerLeft,
     );
   }
 }
@@ -198,8 +188,8 @@ class CommandColumn extends StatelessWidget {
 class BuildButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
+      builder: (context, bloc, state) {
         final title = state is HomeBuildingState
             ? Icon(
                 Icons.clear,
@@ -233,11 +223,11 @@ class BuildButton extends StatelessWidget {
                       onPressed: () {
                         FocusScope.of(context).requestFocus(FocusNode());
                         final bloc = BlocProvider.of<HomeBloc>(context);
-                        if (state is HomeIdleState) {
-                          bloc.dispatch(BuildEvent());
-                        } else if (state is HomeBuildingState) {
-                          bloc.dispatch(StopBuildEvent());
-                        }
+//                        if (state is HomeIdleState) {
+//                          bloc.dispatch(BuildEvent());
+//                        } else if (state is HomeBuildingState) {
+//                          bloc.dispatch(StopBuildEvent());
+//                        }
                       }),
                 ),
               ],
@@ -309,8 +299,8 @@ class _CircularLoadingState extends State<CircularLoading>
 class BuildConfigSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
+      builder: (context, bloc, state) {
         return IgnorePointer(
           ignoring: state is HomeBuildingState,
           child: Column(
@@ -357,15 +347,14 @@ class BuildConfigSection extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Colors.black87,
-                  fontFamily: "DroidSans",
                 ),
               ),
             ),
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-                  BlocProvider.of<HomeBloc>(context)
-                      .dispatch(UpdateBranchEvent(flutterModule: str));
+//                  BlocProvider.of<HomeBloc>(context)
+//                      .dispatch(UpdateBranchEvent(flutterModule: str));
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -374,15 +363,14 @@ class BuildConfigSection extends StatelessWidget {
                     hintText: "Flutter Module Branch",
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      fontFamily: "DroidSans",
                       fontWeight: FontWeight.normal,
                       color: Colors.grey,
                     ))),
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-                  BlocProvider.of<HomeBloc>(context)
-                      .dispatch(UpdateBranchEvent(androidModule: str));
+//                  BlocProvider.of<HomeBloc>(context)
+//                      .dispatch(UpdateBranchEvent(androidModule: str));
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -391,15 +379,14 @@ class BuildConfigSection extends StatelessWidget {
                     hintText: "Android Module Branch",
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      fontFamily: "DroidSans",
                       fontWeight: FontWeight.normal,
                       color: Colors.grey,
                     ))),
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
-                  BlocProvider.of<HomeBloc>(context)
-                      .dispatch(UpdateBranchEvent(iosModule: str));
+//                  BlocProvider.of<HomeBloc>(context)
+//                      .dispatch(UpdateBranchEvent(iosModule: str));
                 },
                 decoration: InputDecoration(
                     disabledBorder: InputBorder.none,
@@ -408,7 +395,6 @@ class BuildConfigSection extends StatelessWidget {
                     hintText: "iOS Module Branch",
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      fontFamily: "DroidSans",
                       fontWeight: FontWeight.normal,
                       color: Colors.grey,
                     ))),
@@ -418,61 +404,11 @@ class BuildConfigSection extends StatelessWidget {
     );
   }
 
-  Widget _buildFlavorDropdown(BuildContext context) {
-    final _bloc = BlocProvider.of<HomeBloc>(context);
-    return BlocBuilder<HomeBloc, HomeState>(
-      bloc: _bloc,
-      builder: (context, state) {
-        return Material(
-          elevation: 4,
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(50),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButton<String>(
-              underline: Container(),
-              isExpanded: true,
-              value: state.buildConfig.flavor,
-              items: state.flavors
-                  .map((f) => DropdownMenuItem<String>(
-                        value: f,
-                        child: Text(
-                          _getFlavorTitle(f),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontFamily: "DroidSans",
-                            fontSize: 14,
-                          ),
-                        ),
-                      ))
-                  .toList(),
-              selectedItemBuilder: (context) => state.flavors
-                  .map((f) => Text(
-                        _getFlavorTitle(f),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontFamily: "DroidSans",
-                          fontSize: 14,
-                        ),
-                      ))
-                  .toList(),
-              onChanged: (newValue) {
-                _bloc.dispatch(UpdateFlavorEvent(flavor: newValue));
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildModeDropdown(BuildContext context) {
     final _bloc = BlocProvider.of<HomeBloc>(context);
-    return BlocBuilder<HomeBloc, HomeState>(
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
       bloc: _bloc,
-      builder: (context, state) {
+      builder: (context, bloc, state) {
         return Material(
           elevation: 4,
           color: Colors.white,
@@ -490,7 +426,6 @@ class BuildConfigSection extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.black87,
-                            fontFamily: "DroidSans",
                             fontSize: 14,
                           ),
                         ),
@@ -505,14 +440,13 @@ class BuildConfigSection extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.black87,
-                            fontFamily: "DroidSans",
                             fontSize: 14,
                           ),
                         ),
                       ))
                   .toList(),
               onChanged: (newValue) {
-                _bloc.dispatch(UpdateBuildModeEvent(mode: newValue));
+//                _bloc.dispatch(UpdateBuildModeEvent(mode: newValue));
               },
             ),
           ),
@@ -523,15 +457,15 @@ class BuildConfigSection extends StatelessWidget {
 
   Widget _buildCheckList(BuildContext context) {
     final _bloc = BlocProvider.of<HomeBloc>(context);
-    return BlocBuilder<HomeBloc, HomeState>(
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
         bloc: _bloc,
-        builder: (context, state) {
+        builder: (context, bloc, state) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               _buildCheckBox(context, "Clean", state.buildConfig.needClean,
                   (value) {
-                _bloc.dispatch(UpdateNeedCleanEvent(value: value));
+//                _bloc.dispatch(UpdateNeedCleanEvent(value: value));
               }),
               Container(
                 height: _padding,
@@ -539,14 +473,14 @@ class BuildConfigSection extends StatelessWidget {
               _buildCheckBox(
                   context, "Packages Get", state.buildConfig.needPackagesGet,
                   (value) {
-                _bloc.dispatch(UpdatePackagesGetEvent(value: value));
+//                _bloc.dispatch(UpdatePackagesGetEvent(value: value));
               }),
               Container(
                 height: _padding,
               ),
               _buildCheckBox(context, "Refresh Native",
                   state.buildConfig.needRefreshNavtiveLibraries, (value) {
-                _bloc.dispatch(UpdateRefreshNativeEvent(value: value));
+//                _bloc.dispatch(UpdateRefreshNativeEvent(value: value));
               }),
             ],
           );
@@ -577,7 +511,6 @@ class BuildConfigSection extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  fontFamily: "DroidSans",
                   color: Colors.black87,
                 ),
               )
@@ -676,7 +609,6 @@ class HomeTextField extends StatelessWidget {
               hintText: hintText,
               hintStyle: TextStyle(
                 fontSize: 14,
-                fontFamily: "DroidSans",
                 fontWeight: FontWeight.normal,
                 color: Colors.grey,
               )),
@@ -694,8 +626,8 @@ class TopMenuSection extends StatefulWidget {
 class _TopMenuSectionState extends State<TopMenuSection> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
+    return BlocWidgetBuilder<HomeBloc, HomeState>(
+      builder: (context, bloc, state) {
         return Container(
           margin: EdgeInsets.symmetric(vertical: 12),
           child: Row(
@@ -714,8 +646,8 @@ class _TopMenuSectionState extends State<TopMenuSection> {
                         );
                       });
                   if (result != null) {
-                    BlocProvider.of<HomeBloc>(context).dispatch(
-                        UpdateEnvironmentEvent(devEnvironment: result));
+//                    BlocProvider.of<HomeBloc>(context).dispatch(
+//                        UpdateEnvironmentEvent(devEnvironment: result));
                   }
                 },
                 child: Icon(

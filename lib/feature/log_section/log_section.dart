@@ -1,12 +1,12 @@
-import 'package:example_flutter/screen/home/bloc.dart';
-import 'package:example_flutter/screen/home/log_section/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lightweight_bloc/lightweight_bloc.dart';
+
+import 'log_section_bloc.dart';
+import 'log_section_state.dart';
 
 class LogSection extends StatefulWidget {
   static Widget newInstance() => BlocProvider<LogSectionBloc>(
-        builder: (context) =>
-            LogSectionBloc(BlocProvider.of<HomeBloc>(context)),
+        builder: (context) => LogSectionBloc(),
         child: LogSection(),
       );
 
@@ -23,8 +23,8 @@ class _LogSectionState extends State<LogSection> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LogSectionBloc, LogSectionState>(
-      builder: (context, state) {
+    return BlocWidgetBuilder<LogSectionBloc, LogSectionState>(
+      builder: (context, bloc, state) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Future.delayed(Duration(milliseconds: 100), () {
             scrollController.animateTo(
@@ -47,7 +47,7 @@ class _LogSectionState extends State<LogSection> {
                 return Container(
                     child: SelectableText(
                   state.logs[index],
-                  style: TextStyle(fontFamily: "DroidSans", fontSize: 12),
+                  style: TextStyle(fontSize: 12),
                 ));
               },
               itemCount: state.logs.length,

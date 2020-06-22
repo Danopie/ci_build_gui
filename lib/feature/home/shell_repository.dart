@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:example_flutter/model/build_config.dart';
+import 'package:example_flutter/feature/config_dialog/build_config.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +14,9 @@ class ShellRepository {
   ShellRepository._internal();
 
   final _stdOutController = PublishSubject<String>();
+
   Sink<String> get stdOutSink => _stdOutController.sink;
+
   Stream<String> get logStream => _stdOutController;
 
   void saveDevEnvironment(DevEnvironment devEnvironment) async {

@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert' as json;
 import 'dart:io';
 
+import 'package:example_flutter/feature/bash/bash_model.dart';
+import 'package:example_flutter/feature/config_dialog/build_config.dart';
+import 'package:example_flutter/helper/socket/socket_model.dart';
 import 'package:example_flutter/helper/string_utils.dart';
-import 'package:example_flutter/model/build_config.dart';
-import 'package:example_flutter/screen/main/main_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/html.dart';
 
@@ -26,6 +27,7 @@ class SocketRepository {
   final serverMessageStream = BehaviorSubject<ServerMessage>();
 
   ServerState get serverState => serverStateStream.value;
+
   void updateServerState(ServerState state) {
     serverStateStream.add(state);
   }
@@ -149,8 +151,8 @@ class SocketRepository {
           args.map((e) => " $e").join();
       print("$TAG.build: command=$cmd");
       _sendToServer(ClientMessage(
-        type: Types.exec,
-        cmd: cmd,
+        type: MessageTypes.exec,
+        data: {'cmd': cmd},
       ).toJson());
     } catch (e) {
       print("$TAG.build.error: $e");
@@ -159,7 +161,7 @@ class SocketRepository {
 
   void stopBuild() {
     _sendToServer(ClientMessage(
-      type: Types.stopExec,
+      type: MessageTypes.stopExec,
     ));
   }
 }
