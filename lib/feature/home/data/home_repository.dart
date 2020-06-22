@@ -81,4 +81,10 @@ class HomeRepository {
 
     return null;
   }
+
+  void requestStopBuilding() {
+    socket.sendToServer(ClientMessage(
+      type: MessageTypes.stop,
+    ).toJson());
+  }
 }

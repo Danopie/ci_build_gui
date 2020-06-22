@@ -8,9 +8,20 @@ import 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeState> {
   final HomeRepository _repository = HomeRepository();
+
   @override
   void init() async {
     _repository.setup();
+    update(state.copyWith(state: HomeStateIds.idle));
+    _repository.socket.serverMessageStream.listen((serverMessage) {
+      if (serverMessage.data != null && serverMessage.data['type'] == 'busy') {
+        update(state.copyWith(
+            state: HomeStateIds.busy, serverMessage: serverMessage));
+      } else {
+        update(state.copyWith(
+            state: HomeStateIds.idle, serverMessage: serverMessage));
+      }
+    });
   }
 
   @override
@@ -21,12 +32,21 @@ class HomeBloc extends Bloc<HomeState> {
 
   @override
   HomeState get initialState => HomeState(
+        state: HomeStateIds.loading,
         buildConfig: BuildConfig.defaultConfig(),
       );
 
   Future<void> requestBuild() async {
-    _repository.requestBuild(state.buildConfig);
-    update(state.copyWith(state: HomeStateIds.requesting));
+    final busy = isServerBusy(state);
+
+    if (busy) {
+      //TODO warning
+      update(state.copyWith(state: HomeStateIds.requesting));
+      _repository.requestStopBuilding();
+    } else {
+      update(state.copyWith(state: HomeStateIds.requesting));
+      _repository.requestBuild(state.buildConfig);
+    }
   }
 
   void onUserInputFlutterModuleBranch(String str) {
@@ -59,4 +79,12 @@ class HomeBloc extends Bloc<HomeState> {
         buildConfig:
             state.buildConfig.copyWith(needRefreshNavtiveLibraries: value)));
   }
+}
+
+bool isServerBusy(HomeState state) {
+  final serverMessageType = state.serverMessage?.data != null
+      ? state.serverMessage?.data['type']
+      : null;
+  final busy = serverMessageType == 'busy' || state.state != HomeStateIds.idle;
+  return busy;
 }

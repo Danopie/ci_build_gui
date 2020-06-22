@@ -40,15 +40,32 @@ function generateServerMessage(serverState, clientMessage, code, message, data) 
 
 _server.on('connection', function connection(socket) {
     console.log(`A client is connected`);
-    socket.send(JSON.stringify(generateServerMessage(
-        generateServerState(
-            _server.clients.size,
-            true,
-            null),
-        null,
-        CODE_OK,
-        null,
-        null)));
+
+    if (_processing == true) {
+        socket.send(JSON.stringify(generateServerMessage(
+            generateServerState(
+                _server.clients.size,
+                true,
+                null),
+            clientMessage,
+            CODE_OK,
+            "Sắp ra rồi! Anh đợi em xíu nha!",
+            {
+                'type': TYPE_BUSY
+            })));
+        return;
+    } else {
+        socket.send(JSON.stringify(generateServerMessage(
+            generateServerState(
+                _server.clients.size,
+                true,
+                null),
+            null,
+            CODE_OK,
+            null,
+            null)));
+    }
+
     // message listener from server 
     socket.on('message', function (message) {
         let receivedMessage = `onMessage: ${message}`;
@@ -96,7 +113,7 @@ function onHandleClientMessage(socket, message) {
             let _command = _arrays.shift();
 
 
-            if(_grantedPermissionCommands.includes(_command) == false){
+            if (_grantedPermissionCommands.includes(_command) == false) {
                 exec(`chmod +x ${_command}`);
                 _grantedPermissionCommands.push(_command);
             }

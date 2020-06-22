@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Expanded(
-                          child: LogSection.newInstance(),
+                          child: LogSection.newInstance(bloc),
                         ),
                         BuildButton(bloc, state),
                         Expanded(child: SizedBox()),
@@ -73,33 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
       "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
       fit: BoxFit.fitWidth,
       alignment: Alignment.topCenter,
-    );
-  }
-
-  Widget serverInfo(HomeState state) {
-    var message = "";
-//    if (state?.serverState?.connected == true) {
-//      message += "Em vẫn thấy anh!";
-//    } else {
-//      message += "Anh đâu mất òi?!";
-//    }
-    return Align(
-      alignment: Alignment.topRight,
-      child: Container(
-        margin: EdgeInsets.only(top: 30, right: 16),
-        padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          message,
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 14,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -174,7 +147,7 @@ class BuildButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final busy = state.serverBash?.busy == true;
+    final busy = isServerBusy(state);
 
     final title = busy
         ? Icon(
@@ -226,8 +199,9 @@ class BuildConfigSection extends StatelessWidget {
   const BuildConfigSection({Key key, this.bloc, this.state}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final busy = isServerBusy(state);
     return IgnorePointer(
-      ignoring: state?.serverBash?.busy == true,
+      ignoring: busy,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,

@@ -1,5 +1,5 @@
-import 'package:example_flutter/feature/bash/bash_model.dart';
 import 'package:example_flutter/feature/config_dialog/build_config.dart';
+import 'package:example_flutter/helper/socket/socket_model.dart';
 
 class HomeStateIds {
   static const loading = "loading";
@@ -12,26 +12,26 @@ class HomeState {
   final String state;
   final BuildConfig buildConfig;
   final List<String> flavors;
-  final ServerBash serverBash;
+  final ServerMessage serverMessage;
 
   HomeState({
     this.state,
     this.buildConfig,
     this.flavors,
-    this.serverBash,
+    this.serverMessage,
   });
 
   HomeState copyWith({
     String state,
     BuildConfig buildConfig,
     List<String> flavors,
-    ServerBash serverBash,
+    ServerMessage serverMessage,
   }) {
     return new HomeState(
       state: state ?? this.state,
       buildConfig: buildConfig ?? this.buildConfig,
       flavors: flavors ?? this.flavors,
-      serverBash: serverBash ?? this.serverBash,
+      serverMessage: serverMessage ?? this.serverMessage,
     );
   }
 }

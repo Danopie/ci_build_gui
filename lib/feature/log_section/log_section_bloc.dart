@@ -4,11 +4,12 @@ import 'log_section_state.dart';
 
 class LogSectionBloc extends Bloc<LogSectionState> {
   @override
-  void init() {
-    // TODO: implement init
-  }
+  void init() {}
 
   @override
-  // TODO: implement initialState
   LogSectionState get initialState => LogSectionState();
+
+  void addLog(String log) {
+    update(state.copyWith(logs: List.from(state.logs ?? [])..add(log)));
+  }
 }
