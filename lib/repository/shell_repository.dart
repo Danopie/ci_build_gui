@@ -64,12 +64,11 @@ class ShellRepository {
   Stream<Map<String, dynamic>> get serveInfoStream =>
       _serveInfoController?.stream;
 
-  bool _permissionGranted = false;
-
   WebSocketChannel _socketChannel;
 
   Stream<dynamic> get socketStream => _socketChannel?.stream;
 
+  bool _permissionGranted = false;
   void setPermission(BuildConfig config) async {
     if (_permissionGranted) {
       return;
@@ -81,13 +80,6 @@ class ShellRepository {
     _permissionGranted = true;
     _stdOutController
         .add("Granted permission for ${config.devEnvironment?.buildFilePath}");
-  }
-
-  void testMessage() {
-    _socketChannel.sink.add(json.jsonEncode({
-      "type": "message",
-      "data": "hello LyLy!",
-    }));
   }
 
   Future<Response<dynamic>> build(BuildConfig config) async {

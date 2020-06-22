@@ -1,13 +1,17 @@
-import 'package:flutter/foundation.dart';
 import 'package:primitive_type_parser/primitive_type_parser.dart';
 
+class Types {
+  static const exec = "exec";
+  static const stopExec = "stopExec";
+}
+
 class ClientMessage {
-  String type;
-  String cmd;
+  final String type;
+  final String cmd;
 
   ClientMessage({
-    @required this.type,
-    @required this.cmd,
+    this.type,
+    this.cmd,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,27 +30,33 @@ class ClientMessage {
 }
 
 class ServerMessage {
-  ClientMessage clientMessage;
-  int code;
-  int clientCount;
-  bool busy;
-  String message;
+  final ClientMessage clientMessage;
+  final String type;
+  final int code;
+  final int clientCount;
+  final bool busy;
+  final String message;
+  final String log;
 
   ServerMessage({
-    @required this.clientMessage,
-    @required this.code,
-    @required this.clientCount,
-    @required this.busy,
-    @required this.message,
+    this.type,
+    this.log,
+    this.clientMessage,
+    this.code,
+    this.clientCount,
+    this.busy,
+    this.message,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'clientMessage': clientMessage == null ? null : clientMessage.toJson(),
+      'type': type == null ? null : type,
       'code': code == null ? null : code,
       'clientCount': clientCount == null ? null : clientCount,
       'busy': busy == null ? null : busy,
       'message': message == null ? null : message,
+      'log': log == null ? null : log,
     };
   }
 
@@ -55,11 +65,33 @@ class ServerMessage {
       clientMessage: json['clientMessage'] == null
           ? null
           : ClientMessage.fromJson(json['clientMessage']),
+      type: json['type'] == null ? null : parseString(json['type']),
       code: json['code'] == null ? null : parseInt(json['code']),
       clientCount:
           json['clientCount'] == null ? null : parseInt(json['clientCount']),
       busy: json['busy'] == null ? null : parseBool(json['busy']),
       message: json['message'] == null ? null : parseString(json['message']),
+      log: json['log'] == null ? null : parseString(json['log']),
+    );
+  }
+}
+
+class ServerState {
+  bool connected;
+  dynamic error;
+
+  ServerState({
+    this.connected,
+    this.error,
+  });
+
+  ServerState copyWith({
+    bool connected,
+    dynamic error,
+  }) {
+    return new ServerState(
+      connected: connected ?? this.connected,
+      error: error ?? this.error,
     );
   }
 }

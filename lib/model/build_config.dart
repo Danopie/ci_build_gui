@@ -24,7 +24,10 @@ class BuildConfig {
   final DevEnvironment devEnvironment;
 
   factory BuildConfig.defaultConfig() => BuildConfig(
-      devEnvironment: DevEnvironment(),
+      devEnvironment: DevEnvironment(
+        buildFilePath:
+            "~/Workspace/dev/local_buyer_mobile/clean-build-deloy.sh",
+      ),
       flavor: 'test',
       debug: false,
       mode: BuildMode.Normal,
