@@ -1,5 +1,4 @@
 import 'package:example_flutter/feature/config_dialog/build_config.dart';
-import 'package:example_flutter/feature/config_dialog/config_dialog.dart';
 import 'package:example_flutter/feature/home/home_state.dart';
 import 'package:example_flutter/feature/log_section/log_section.dart';
 import 'package:example_flutter/helper/widget/gradient_button.dart';
@@ -9,7 +8,7 @@ import 'package:lightweight_bloc/lightweight_bloc.dart';
 import 'home_bloc.dart';
 
 const double _padding = 24;
-const int _controlOpacity = 255;
+final _controlBackgroundColor = Colors.white.withAlpha(150);
 
 class HomeScreen extends StatefulWidget {
   static Widget newInstance() {
@@ -34,28 +33,26 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, bloc, state) {
         return Scaffold(
           body: Stack(
+            fit: StackFit.expand,
             children: [
               BackgroundSection(),
+              lylyBackground(),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Expanded(
-                    child: Stack(
-                      children: [
-                        lylyBackground(),
-                        CommandColumn(),
-                        serverInfo(state),
-                      ],
-                    ),
+                    child: CommandColumn(),
                   ),
-                  const SizedBox(width: 20),
+                  Expanded(child: SizedBox()),
                   Expanded(
                     child: Column(
-                      children: <Widget>[
-                        TopMenuSection(),
+                      children: [
                         Expanded(
                           child: LogSection.newInstance(),
                         ),
+                        BuildButton(),
+                        Expanded(child: SizedBox()),
                       ],
                     ),
                   ),
@@ -71,8 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget lylyBackground() {
     return Image.network(
       "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
-      height: double.infinity,
-      fit: BoxFit.fitHeight,
+      fit: BoxFit.fitWidth,
+      alignment: Alignment.topCenter,
     );
   }
 
@@ -132,7 +129,6 @@ class CommandColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: (MediaQuery.of(context).size.width / 2 - _padding * 2) * 2 / 3,
       padding: EdgeInsets.all(_padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,32 +147,9 @@ class CommandColumn extends StatelessWidget {
                   ]),
             ),
           ),
-          /*Align(
-            alignment: Alignment.centerLeft,
-            child: AvatarGlow(
-              startDelay: Duration(milliseconds: 1000),
-              glowColor: Colors.blue,
-              endRadius: 60.0,
-              duration: Duration(milliseconds: 2000),
-              repeat: true,
-              showTwoGlows: true,
-              repeatPauseDuration: Duration(milliseconds: 100),
-              child: Material(
-                elevation: 8.0,
-                shape: CircleBorder(),
-                clipBehavior: Clip.hardEdge,
-                child: CircleAvatar(
-                  backgroundColor: Colors.grey[100],
-                  child: Image.asset(lyLy, fit: BoxFit.contain),
-                  radius: 40.0,
-                ),
-              ),
-            ),
-          ),*/
-          Expanded(child: Container()),
+          Expanded(child: SizedBox()),
           BuildConfigSection(),
-          const SizedBox(height: _padding),
-          BuildButton(),
+          Expanded(child: SizedBox()),
         ],
       ),
     );
@@ -311,10 +284,6 @@ class BuildConfigSection extends StatelessWidget {
               Container(
                 height: _padding,
               ),
-//                _buildFlavorDropdown(context),
-//                Container(
-//                  height: _padding,
-//                ),
               _buildModeDropdown(context),
               Container(
                 height: _padding,
@@ -330,7 +299,7 @@ class BuildConfigSection extends StatelessWidget {
   Widget _buildBranchTextField(BuildContext context) {
     return Material(
       elevation: 4,
-      color: Colors.white.withAlpha(_controlOpacity),
+      color: _controlBackgroundColor,
       borderRadius: BorderRadius.circular(_padding),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -411,8 +380,8 @@ class BuildConfigSection extends StatelessWidget {
       builder: (context, bloc, state) {
         return Material(
           elevation: 4,
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(50),
+          color: _controlBackgroundColor,
+          borderRadius: BorderRadius.circular(_padding),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: DropdownButton<BuildMode>(
@@ -463,15 +432,8 @@ class BuildConfigSection extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _buildCheckBox(context, "Clean", state.buildConfig.needClean,
-                  (value) {
-//                _bloc.dispatch(UpdateNeedCleanEvent(value: value));
-              }),
-              Container(
-                height: _padding,
-              ),
               _buildCheckBox(
-                  context, "Packages Get", state.buildConfig.needPackagesGet,
+                  context, "Pub Get", state.buildConfig.needPackagesGet,
                   (value) {
 //                _bloc.dispatch(UpdatePackagesGetEvent(value: value));
               }),
@@ -491,10 +453,10 @@ class BuildConfigSection extends StatelessWidget {
       Function(bool) onChanged) {
     return Material(
       elevation: 4,
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(50),
+      color: _controlBackgroundColor,
+      borderRadius: BorderRadius.circular(_padding),
       child: InkWell(
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: BorderRadius.circular(_padding),
         onTap: () {
           onChanged(!value);
         },
@@ -614,54 +576,6 @@ class HomeTextField extends StatelessWidget {
               )),
         ),
       ),
-    );
-  }
-}
-
-class TopMenuSection extends StatefulWidget {
-  @override
-  _TopMenuSectionState createState() => _TopMenuSectionState();
-}
-
-class _TopMenuSectionState extends State<TopMenuSection> {
-  @override
-  Widget build(BuildContext context) {
-    return BlocWidgetBuilder<HomeBloc, HomeState>(
-      builder: (context, bloc, state) {
-        return Container(
-          margin: EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: <Widget>[
-              Spacer(),
-              HomeButton(
-                height: 50,
-                width: 50,
-                onPressed: () async {
-                  final result = await showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (context) {
-                        return ConfigDialog(
-                          devEnvironment: state.buildConfig.devEnvironment,
-                        );
-                      });
-                  if (result != null) {
-//                    BlocProvider.of<HomeBloc>(context).dispatch(
-//                        UpdateEnvironmentEvent(devEnvironment: result));
-                  }
-                },
-                child: Icon(
-                  Icons.settings,
-                  color: Colors.white,
-                ),
-              ),
-              Container(
-                width: 12,
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lightweight_bloc/lightweight_bloc.dart';
 
@@ -34,7 +36,7 @@ class _LogSectionState extends State<LogSection> {
           });
         });
         return Container(
-          padding: const EdgeInsets.only(right: 16, bottom: 16),
+          padding: const EdgeInsets.all(24),
           child: Material(
             borderRadius: BorderRadius.circular(24),
             color: Colors.white,
@@ -50,7 +52,7 @@ class _LogSectionState extends State<LogSection> {
                   style: TextStyle(fontSize: 12),
                 ));
               },
-              itemCount: state.logs.length,
+              itemCount: state.logs?.length ?? 0,
             ),
           ),
         );
