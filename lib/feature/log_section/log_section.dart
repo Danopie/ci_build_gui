@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clippy/browser.dart' as clippy;
 import 'package:example_flutter/feature/home/home_bloc.dart';
 import 'package:example_flutter/feature/home/home_state.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,10 @@ class LogSection extends StatefulWidget {
 
 class _LogSectionState extends State<LogSection> {
   final scrollController = ScrollController();
-  static const logTextStyle = TextStyle(fontSize: 12, color: Colors.black87);
+  static const logTextStyle = TextStyle(
+    fontSize: 14,
+    color: Colors.white,
+  );
   @override
   Widget build(BuildContext context) {
     return BlocWidgetBuilder<LogSectionBloc, LogSectionState>(
@@ -49,17 +53,36 @@ class _LogSectionState extends State<LogSection> {
             }
           },
           child: Container(
-            color: Colors.white.withAlpha(120),
+            color: Colors.black45,
             child: ListView.builder(
               padding: EdgeInsets.all(12),
               physics: BouncingScrollPhysics(),
               controller: scrollController,
               itemBuilder: (context, index) {
-                if (state.logs[index]
-                    .startsWith("https://install.appcenter.ms")) {
-                  return TextFormField(
-                    initialValue: state.logs[index],
-                    style: logTextStyle,
+                final textStr = state.logs[index];
+                if (textStr.startsWith("https://install.appcenter.ms")) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Material(
+                      elevation: 4,
+                      color: Colors.deepPurple,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () async {
+                          // Write to clipboard
+                          await clippy.write(textStr);
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Text(
+                            textStr,
+                            style: logTextStyle,
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 } else {
                   return Text(

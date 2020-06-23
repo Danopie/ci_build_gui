@@ -24,6 +24,7 @@ dependencies:
   lightweight_bloc: ^0.0.5+1
   primitive_type_parser: ^0.0.2
   rxdart: ^0.24.1
+  clippy: ^1.0.0
 
 dev_dependencies:
   flutter_test:
