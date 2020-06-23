@@ -55,7 +55,7 @@ class _LogSectionState extends State<LogSection> {
               color: Colors.white,
               elevation: 8,
               child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 36, vertical: 24),
+                padding: EdgeInsets.all(8),
                 physics: BouncingScrollPhysics(),
                 controller: scrollController,
                 itemBuilder: (context, index) {

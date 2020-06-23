@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget lylyBackground() {
     return Image.network(
       "https://ss-images.catscdn.vn/wp700/2020/03/04/7100023/81963578_2506845056082028_5294172470838820864_o.jpg",
-      fit: BoxFit.fitWidth,
+      fit: BoxFit.cover,
       alignment: Alignment.topCenter,
     );
   }
