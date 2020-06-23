@@ -10,6 +10,8 @@ class LogSectionBloc extends Bloc<LogSectionState> {
   LogSectionState get initialState => LogSectionState();
 
   void addLog(String log) {
-    update(state.copyWith(logs: List.from(state.logs ?? [])..add(log)));
+    if (log?.isNotEmpty == true) {
+      update(state.copyWith(logs: List.from(state.logs ?? [])..add(log)));
+    }
   }
 }
