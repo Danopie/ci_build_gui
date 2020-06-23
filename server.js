@@ -118,7 +118,7 @@ function onHandleClientMessage(socket, message) {
                 _grantedPermissionCommands.push(_command);
             }
 
-            var child = spawn(_command, _arrays);
+            var child = spawn(_command, _arrays, {shell: true});
             child.stdout.on('data', function (data) {
                 onSpawn(data, socket, clientMessage);
             });
