@@ -17,7 +17,7 @@ class HomeRepository {
   }
 
   bool requestBuild(BuildConfig config) {
-    if (!socket.serverState.connected) return false;
+    if (socket?.serverState?.connected != true) return false;
 
     final cmd = _generateExecCommand(config);
     socket.sendToServer(ClientMessage(
@@ -85,7 +85,7 @@ class HomeRepository {
   }
 
   bool requestStopBuilding() {
-    if (!socket.serverState.connected) return false;
+    if (socket?.serverState?.connected != true) return false;
 
     socket.sendToServer(ClientMessage(
       type: MessageTypes.stop,
