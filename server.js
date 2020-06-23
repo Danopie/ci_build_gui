@@ -47,7 +47,7 @@ _server.on('connection', function connection(socket) {
                 _server.clients.size,
                 true,
                 null),
-            clientMessage,
+            null,
             CODE_OK,
             "Sắp ra rồi! Anh đợi em xíu nha!",
             {
