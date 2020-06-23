@@ -79,6 +79,16 @@ class HomeBloc extends Bloc<HomeState> {
         buildConfig:
             state.buildConfig.copyWith(needRefreshNavtiveLibraries: value)));
   }
+
+  void onUserChangedNeedAndroid(bool value) {
+    update(state.copyWith(
+        buildConfig: state.buildConfig.copyWith(needAndroid: value)));
+  }
+
+  void onUserChangedNeedIOS(bool value) {
+    update(state.copyWith(
+        buildConfig: state.buildConfig.copyWith(needIOS: value)));
+  }
 }
 
 bool isServerBusy(HomeState state) {

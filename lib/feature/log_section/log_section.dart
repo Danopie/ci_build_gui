@@ -55,7 +55,7 @@ class _LogSectionState extends State<LogSection> {
               color: Colors.white,
               elevation: 8,
               child: ListView.builder(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.all(12),
                 physics: BouncingScrollPhysics(),
                 controller: scrollController,
                 itemBuilder: (context, index) {
@@ -66,7 +66,7 @@ class _LogSectionState extends State<LogSection> {
                       style: TextStyle(fontSize: 12),
                     );
                   } else {
-                    return SelectableText(
+                    return Text(
                       state.logs[index],
                       style: TextStyle(fontSize: 12),
                     );

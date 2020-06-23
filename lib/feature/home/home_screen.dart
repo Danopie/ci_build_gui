@@ -38,8 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               lylyBackground(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Expanded(
                     child: CommandColumn(
@@ -110,6 +108,7 @@ class CommandColumn extends StatelessWidget {
       padding: EdgeInsets.all(_padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(bottom: _padding),
@@ -203,7 +202,7 @@ class BuildConfigSection extends StatelessWidget {
     return IgnorePointer(
       ignoring: busy,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+//        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           _buildBranchTextField(bloc, state),
@@ -220,6 +219,11 @@ class BuildConfigSection extends StatelessWidget {
     );
   }
 
+  static const hintStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: Colors.black54,
+  );
   Widget _buildBranchTextField(HomeBloc bloc, HomeState state) {
     return Material(
       elevation: 4,
@@ -249,45 +253,36 @@ class BuildConfigSection extends StatelessWidget {
                   bloc.onUserInputFlutterModuleBranch(str);
                 },
                 decoration: InputDecoration(
-                    disabledBorder: InputBorder.none,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    hintText: "Flutter Module Branch",
-                    hintStyle: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.grey,
-                    ))),
+                  disabledBorder: InputBorder.none,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  hintText: "Flutter Module Branch",
+                  hintStyle: hintStyle,
+                )),
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
                   bloc.onUserInputAndroidModuleBranch(str);
                 },
                 decoration: InputDecoration(
-                    disabledBorder: InputBorder.none,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    hintText: "Android Module Branch",
-                    hintStyle: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.grey,
-                    ))),
+                  disabledBorder: InputBorder.none,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  hintText: "Android Module Branch",
+                  hintStyle: hintStyle,
+                )),
             TextField(
                 textAlign: TextAlign.left,
                 onChanged: (str) {
                   bloc.onUserInputIOSModuleBranch(str);
                 },
                 decoration: InputDecoration(
-                    disabledBorder: InputBorder.none,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    hintText: "iOS Module Branch",
-                    hintStyle: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.grey,
-                    ))),
+                  disabledBorder: InputBorder.none,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  hintText: "iOS Module Branch",
+                  hintStyle: hintStyle,
+                )),
           ],
         ),
       ),
@@ -340,15 +335,17 @@ class BuildConfigSection extends StatelessWidget {
   }
 
   Widget _buildCheckList(HomeBloc bloc, HomeState state) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Row(
       children: <Widget>[
+        buildCheckBox("Android", state.buildConfig.needAndroid, (value) {
+          bloc.onUserChangedNeedAndroid(value);
+        }),
+        buildCheckBox("iOS", state.buildConfig.needIOS, (value) {
+          bloc.onUserChangedNeedIOS(value);
+        }),
         buildCheckBox("Pub Get", state.buildConfig.needPackagesGet, (value) {
           bloc.onUserChangedPubGet(value);
         }),
-        Container(
-          height: _padding,
-        ),
         buildCheckBox(
             "Refresh Native", state.buildConfig.needRefreshNavtiveLibraries,
             (value) {

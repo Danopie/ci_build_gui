@@ -2,8 +2,6 @@ enum BuildMode {
   Normal,
   EditEnviromentOnly,
   FlutterBuildOnly,
-  AndroidOnly,
-  IosOnly,
   BuildFileOnly,
   UploadOnly
 }
@@ -20,32 +18,40 @@ class BuildConfig {
   final bool needClean;
   final bool needPackagesGet;
   final bool needRefreshNavtiveLibraries;
+  final bool needAndroid;
+  final bool needIOS;
 
   final DevEnvironment devEnvironment;
 
   factory BuildConfig.defaultConfig() => BuildConfig(
-      devEnvironment: DevEnvironment(
-        buildFilePath:
-            "~/Workspace/dev/local_buyer_mobile/clean-build-deloy.sh",
-      ),
-      flavor: 'test',
-      debug: false,
-      mode: BuildMode.Normal,
-      needClean: true,
-      needPackagesGet: true,
-      needRefreshNavtiveLibraries: true);
+        devEnvironment: DevEnvironment(
+          buildFilePath:
+              "~/Workspace/dev/local_buyer_mobile/clean-build-deloy.sh",
+        ),
+        flavor: 'test',
+        debug: false,
+        mode: BuildMode.Normal,
+        needClean: true,
+        needPackagesGet: true,
+        needRefreshNavtiveLibraries: true,
+        needAndroid: true,
+        needIOS: true,
+      );
 
-  const BuildConfig(
-      {this.flavor,
-      this.flutterModule,
-      this.androidModule,
-      this.iosModule,
-      this.debug,
-      this.mode,
-      this.needClean,
-      this.needPackagesGet,
-      this.needRefreshNavtiveLibraries,
-      this.devEnvironment});
+  const BuildConfig({
+    this.flavor,
+    this.flutterModule,
+    this.androidModule,
+    this.iosModule,
+    this.debug,
+    this.mode,
+    this.needClean,
+    this.needPackagesGet,
+    this.needRefreshNavtiveLibraries,
+    this.devEnvironment,
+    this.needAndroid,
+    this.needIOS,
+  });
 
   BuildConfig copyWith({
     String flavor,
@@ -57,6 +63,8 @@ class BuildConfig {
     bool needClean,
     bool needPackagesGet,
     bool needRefreshNavtiveLibraries,
+    bool needAndroid,
+    bool needIOS,
     DevEnvironment devEnvironment,
   }) {
     return new BuildConfig(
@@ -70,6 +78,8 @@ class BuildConfig {
       needPackagesGet: needPackagesGet ?? this.needPackagesGet,
       needRefreshNavtiveLibraries:
           needRefreshNavtiveLibraries ?? this.needRefreshNavtiveLibraries,
+      needAndroid: needAndroid ?? this.needAndroid,
+      needIOS: needIOS ?? this.needIOS,
       devEnvironment: devEnvironment ?? this.devEnvironment,
     );
   }

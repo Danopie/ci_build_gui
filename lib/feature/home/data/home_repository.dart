@@ -44,12 +44,6 @@ class HomeRepository {
     switch (config.mode) {
       case BuildMode.Normal:
         break;
-      case BuildMode.IosOnly:
-        args.addAll(["-i", "1"]);
-        break;
-      case BuildMode.AndroidOnly:
-        args.addAll(["-a", "1"]);
-        break;
       case BuildMode.EditEnviromentOnly:
         args.addAll(["-e", "1"]);
         break;
@@ -69,6 +63,11 @@ class HomeRepository {
     args.addAll(["-c", getBooleanValue(config.needClean)]);
     //Refresh native libraries
     args.addAll(["-l", getBooleanValue(config.needRefreshNavtiveLibraries)]);
+    if (config.needIOS && !config.needAndroid) {
+      args.addAll(["-i", "1"]);
+    } else if (config.needAndroid && !config.needIOS) {
+      args.addAll(["-a", "1"]);
+    }
 
     try {
       final cmd = "${config.devEnvironment?.buildFilePath}" +

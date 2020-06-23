@@ -29,6 +29,7 @@ Widget buildCheckBox(String title, bool value, Function(bool) onChanged) {
               title,
               style: TextStyle(
                 color: Colors.black87,
+                fontSize: 14,
               ),
             )
           ],
