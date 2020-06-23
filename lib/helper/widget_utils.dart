@@ -5,7 +5,8 @@ import 'widget/gradient_button.dart';
 const double _padding = 24;
 final _controlBackgroundColor = Colors.white.withAlpha(150);
 
-Widget buildCheckBox(String title, bool value, Function(bool) onChanged) {
+Widget buildCheckBox(
+    String title, bool initialValue, Function(bool) onChanged) {
   return Material(
     elevation: 4,
     color: _controlBackgroundColor,
@@ -13,7 +14,7 @@ Widget buildCheckBox(String title, bool value, Function(bool) onChanged) {
     child: InkWell(
       borderRadius: BorderRadius.circular(_padding),
       onTap: () {
-        onChanged(!value);
+        onChanged(!initialValue);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -21,7 +22,8 @@ Widget buildCheckBox(String title, bool value, Function(bool) onChanged) {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             CircularCheckBox(
-              value: value,
+              value: initialValue,
+              onChanged: onChanged,
             ),
             Container(
               width: 12,
