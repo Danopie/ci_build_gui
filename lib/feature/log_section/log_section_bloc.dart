@@ -11,6 +11,8 @@ class LogSectionBloc extends Bloc<LogSectionState> {
 
   void addLog(String log) {
     if (log?.isNotEmpty == true) {
+      if (log.endsWith('\n')) log = log.substring(0, log.length - 1);
+      if (log.startsWith('\n')) log = log.substring(1);
       update(state.copyWith(logs: List.from(state.logs ?? [])..add(log)));
     }
   }
