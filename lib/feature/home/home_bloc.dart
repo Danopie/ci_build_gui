@@ -40,12 +40,11 @@ class HomeBloc extends Bloc<HomeState> {
     final busy = isServerBusy(state);
 
     if (busy) {
-      //TODO warning
-      update(state.copyWith(state: HomeStateIds.requesting));
-      _repository.requestStopBuilding();
+      if (_repository.requestStopBuilding())
+        update(state.copyWith(state: HomeStateIds.requesting));
     } else {
-      update(state.copyWith(state: HomeStateIds.requesting));
-      _repository.requestBuild(state.buildConfig);
+      if (_repository.requestBuild(state.buildConfig))
+        update(state.copyWith(state: HomeStateIds.requesting));
     }
   }
 

@@ -16,7 +16,9 @@ class HomeRepository {
     socket.disconnect();
   }
 
-  void requestBuild(BuildConfig config) {
+  bool requestBuild(BuildConfig config) {
+    if (!socket.serverState.connected) return false;
+
     final cmd = _generateExecCommand(config);
     socket.sendToServer(ClientMessage(
       type: MessageTypes.exec,
@@ -24,6 +26,7 @@ class HomeRepository {
         'cmd': cmd,
       },
     ).toJson());
+    return true;
   }
 
   String _generateExecCommand(BuildConfig config) {
@@ -81,9 +84,12 @@ class HomeRepository {
     return null;
   }
 
-  void requestStopBuilding() {
+  bool requestStopBuilding() {
+    if (!socket.serverState.connected) return false;
+
     socket.sendToServer(ClientMessage(
       type: MessageTypes.stop,
     ).toJson());
+    return true;
   }
 }
