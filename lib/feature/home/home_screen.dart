@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       children: [
                         Expanded(
+                          flex: 2,
                           child: Padding(
                             padding:
                                 const EdgeInsets.only(left: 16, bottom: 16),
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                        Expanded(flex: 2, child: Container()),
+                        Expanded(flex: 3, child: Container()),
                       ],
                     ),
                   ),
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Image.asset(
       "lyly_bg.jpg",
       fit: BoxFit.cover,
-      alignment: Alignment.topCenter,
+      alignment: Alignment.center,
     );
   }
 }
