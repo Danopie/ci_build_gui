@@ -59,10 +59,18 @@ class _LogSectionState extends State<LogSection> {
                 physics: BouncingScrollPhysics(),
                 controller: scrollController,
                 itemBuilder: (context, index) {
-                  return SelectableText(
-                    state.logs[index],
-                    style: TextStyle(fontSize: 12),
-                  );
+                  if (state.logs[index]
+                      .startsWith("https://install.appcenter.ms")) {
+                    return TextFormField(
+                      initialValue: state.logs[index],
+                      style: TextStyle(fontSize: 12),
+                    );
+                  } else {
+                    return SelectableText(
+                      state.logs[index],
+                      style: TextStyle(fontSize: 12),
+                    );
+                  }
                 },
                 itemCount: state.logs?.length ?? 0,
               ),
