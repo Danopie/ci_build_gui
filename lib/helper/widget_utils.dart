@@ -18,6 +18,7 @@ Widget buildCheckBox(String title, bool value, Function(bool) onChanged) {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             CircularCheckBox(
               value: value,

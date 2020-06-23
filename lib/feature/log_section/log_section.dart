@@ -24,7 +24,7 @@ class LogSection extends StatefulWidget {
 
 class _LogSectionState extends State<LogSection> {
   final scrollController = ScrollController();
-
+  static const logTextStyle = TextStyle(fontSize: 12, color: Colors.black87);
   @override
   Widget build(BuildContext context) {
     return BlocWidgetBuilder<LogSectionBloc, LogSectionState>(
@@ -49,31 +49,26 @@ class _LogSectionState extends State<LogSection> {
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(24),
-            child: Material(
-              borderRadius: BorderRadius.circular(24),
-              color: Colors.white,
-              elevation: 8,
-              child: ListView.builder(
-                padding: EdgeInsets.all(12),
-                physics: BouncingScrollPhysics(),
-                controller: scrollController,
-                itemBuilder: (context, index) {
-                  if (state.logs[index]
-                      .startsWith("https://install.appcenter.ms")) {
-                    return TextFormField(
-                      initialValue: state.logs[index],
-                      style: TextStyle(fontSize: 12),
-                    );
-                  } else {
-                    return Text(
-                      state.logs[index],
-                      style: TextStyle(fontSize: 12),
-                    );
-                  }
-                },
-                itemCount: state.logs?.length ?? 0,
-              ),
+            color: Colors.white.withAlpha(120),
+            child: ListView.builder(
+              padding: EdgeInsets.all(12),
+              physics: BouncingScrollPhysics(),
+              controller: scrollController,
+              itemBuilder: (context, index) {
+                if (state.logs[index]
+                    .startsWith("https://install.appcenter.ms")) {
+                  return TextFormField(
+                    initialValue: state.logs[index],
+                    style: logTextStyle,
+                  );
+                } else {
+                  return Text(
+                    state.logs[index],
+                    style: logTextStyle,
+                  );
+                }
+              },
+              itemCount: state.logs?.length ?? 0,
             ),
           ),
         );
